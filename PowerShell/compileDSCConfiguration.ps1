@@ -1,5 +1,5 @@
 $resource_group_name = 'svc-core-prod-rg'
-$automation_account_name = 'auto-core-eastus-tamz'
+$automation_account_name = 'auto-core-eastus-prefix'
 
 Select-AzSubscription -Subscription Management
 
