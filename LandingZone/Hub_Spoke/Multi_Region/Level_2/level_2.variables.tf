@@ -38,6 +38,10 @@ variable "domain_name" {
   default = "domain.net"
 }
 
+variable "domain_ip" {
+  default = "192.168.100.5"
+}
+
 variable "region1_loc" {
   default = "eastus"
 }
@@ -51,6 +55,32 @@ variable "region2_loc" {
   default = "westus"
 }
 
+variable "local_network_gateway_prefix" {
+    type = list
+    description = "Local Network Gateway Address Space"
+    default = ["192.168.100.0/24","192.168.101.0/24"]
+}
+
+variable "local_network_gateway_name" {
+    type = string
+    description = "Local Network Gateway Name"
+    default = "My-Home"
+}
+variable "gateway_pip_name" {
+    type = string
+    description = "Virtual Network Gateway Public IP Name"
+    default = "mynet-vpg-ip"
+}
+variable "gateway_name" {
+    type = string
+    description = "Virtual Network Gateway Name"
+    default = "mynet-vpg"
+}
+variable "s2s_connection_name" {
+    type = string
+    description = "Site to Site Connetion Name"
+    default = "mynet-s2s-conn"
+}
 variable "svc_resource_group_name" {
     type        = string 
     description = "Shared Services Resource Group"
@@ -81,9 +111,7 @@ variable dsc_mode {
   default = "applyAndMonitor"
 }
 
-variable "domain_ip" {
-  default = "192.168.100.5"
-}
+
 variable "domain_NetbiosName" {
   default = "corp"
 }
@@ -140,32 +168,7 @@ variable "region2_gateway_address_prefix" {
     description = "Local Network Gateway Address Space"
     default = "10.2.252.0/24"
 }
-variable "local_network_gateway_prefix" {
-    type = list
-    description = "Local Network Gateway Address Space"
-    default = ["192.168.100.0/24","192.168.101.0/24"]
-}
 
-variable "local_network_gateway_name" {
-    type = string
-    description = "Local Network Gateway Name"
-    default = "My-Home"
-}
-variable "gateway_pip_name" {
-    type = string
-    description = "Virtual Network Gateway Public IP Name"
-    default = "mynet-vpg-ip"
-}
-variable "gateway_name" {
-    type = string
-    description = "Virtual Network Gateway Name"
-    default = "mynet-vpg"
-}
-variable "s2s_connection_name" {
-    type = string
-    description = "Site to Site Connetion Name"
-    default = "mynet-s2s-conn"
-}
 # Dns2 host module
 variable "dns2_vm_name" {
     type        = string
