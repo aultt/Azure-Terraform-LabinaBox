@@ -71,6 +71,7 @@ data "azurerm_virtual_network" "lz_spk_region2" {
 }
 
 data "azurerm_private_dns_zone" "storage" {
+  provider = azurerm.connectivity
   name                = "privatelink.blob.core.windows.net"
   resource_group_name = data.azurerm_virtual_network.hub_region1.resource_group_name
 }
