@@ -140,7 +140,7 @@ Node "localhost"
    
    xDnsServerConditionalForwarder 'privatestorage'
    {
-       Name             = 'privatelink.blob.core.azure.net'
+       Name             = 'privatelink.blob.core.windows.net'
        MasterServers    = '168.63.129.16'
        ReplicationScope = 'None'
        DependsOn = '[WindowsFeature]DNS'
