@@ -17,7 +17,16 @@ resource "azurerm_subnet" "vnet" {
   depends_on = [azurerm_virtual_network.vnet]
 }
 
+resource "azurerm_network_security_group" "subnet" { 
+    name                        = "default-${var.vnet_name}-subnet-nsg"
+    location                    = var.location
+    resource_group_name         = azurerm_subnet.vnet.resource_group_name
+}
 
+resource "azurerm_subnet_network_security_group_association" "subnet_nsg_assoc" {
+  subnet_id                 = azurerm_subnet.vnet.id
+  network_security_group_id = azurerm_network_security_group.subnet.id
+}
 
 
 

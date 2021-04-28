@@ -96,7 +96,15 @@ Node "localhost"
    xDnsServerConditionalForwarder 'tamz'
    {
        Name             = "${var.domain_name}"
-       MasterServers    = @('10.3.3.5','10.4.3.5','192.168.40.5')
+       MasterServers    = @("${var.dc1_private_ip_addr}","${var.dc2_private_ip_addr}","${var.domain_ip}")
+       ReplicationScope = 'None'
+       DependsOn = '[WindowsFeature]DNS'
+   }
+   
+   xDnsServerConditionalForwarder 'publicvault'
+   {
+       Name             = 'vault.azure.net'
+       MasterServers    = '168.63.129.16'
        ReplicationScope = 'None'
        DependsOn = '[WindowsFeature]DNS'
    }
@@ -104,28 +112,36 @@ Node "localhost"
    xDnsServerConditionalForwarder 'blob'
    {
        Name             = 'blob.core.windows.net'
-       MasterServers    = '168.63.125.16'
+       MasterServers    = '168.63.129.16'
        ReplicationScope = 'None'
       DependsOn = '[WindowsFeature]DNS'
    }
   xDnsServerConditionalForwarder 'publicdatabase'
    {
        Name             = 'database.windows.net'
-       MasterServers    = '168.63.125.16'
+       MasterServers    = '168.63.129.16'
        ReplicationScope = 'None'
        DependsOn = '[WindowsFeature]DNS'
    }
    xDnsServerConditionalForwarder 'privatedatabase'
    {
        Name             = 'privatelink.database.windows.net'
-       MasterServers    = '168.63.125.16'
+       MasterServers    = '168.63.129.16'
        ReplicationScope = 'None'
        DependsOn = '[WindowsFeature]DNS'
    }
    xDnsServerConditionalForwarder 'privatevault'
    {
        Name             = 'privatelink.vaultcore.azure.net'
-       MasterServers    = '168.63.125.16'
+       MasterServers    = '168.63.129.16'
+       ReplicationScope = 'None'
+       DependsOn = '[WindowsFeature]DNS'
+   }
+   
+   xDnsServerConditionalForwarder 'privatestorage'
+   {
+       Name             = 'privatelink.blob.core.azure.net'
+       MasterServers    = '168.63.129.16'
        ReplicationScope = 'None'
        DependsOn = '[WindowsFeature]DNS'
    }

@@ -23,9 +23,9 @@ variable "gateway_ip_address" {
 }
 
 variable "Vpn_shared_key" {
+    sensitive   = true
     type = string
-    description = "VPN SharedKey to connect"
-    default = "yoursecretkey"
+    description = "Shared Key for VPN Connection"
 }
 
 variable "corp_prefix" {
@@ -259,4 +259,15 @@ variable "id_spk_region2_shared_subnet_addr" {
 variable "bastion_addr_prefix" {
     type = string
     default = "10.1.250.0/24"
+}
+
+variable "dc1_private_ip_addr" {
+    type        = string 
+    description = "DC1 Private IP Address"
+    default     = "10.3.3.5"
+}
+variable "dc2_private_ip_addr" {
+    type        = string 
+    description = "DC2 Private IP Address"
+    default     = "10.4.3.5"
 }

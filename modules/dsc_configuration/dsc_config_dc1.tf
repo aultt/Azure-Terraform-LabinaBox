@@ -192,3 +192,5 @@ variable "domain_ip" {}
 variable "jump_host_name" {}
 variable "dns1_name" {}
 variable "dns2_name" {}
+variable "dc2_private_ip_addr"{}
+variable "dc1_private_ip_addr" {}

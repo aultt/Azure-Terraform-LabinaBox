@@ -362,6 +362,8 @@ module "DSC_config" {
   dns1_name = var.dns1_vm_name
   dns2_name = var.dns2_vm_name
   jump_host_name = var.jump_host_name
+  dc1_private_ip_addr = var.dc1_private_ip_addr
+  dc2_private_ip_addr = var.dc2_private_ip_addr
 }
 
 module "onpremise_VPN_Region1"{
