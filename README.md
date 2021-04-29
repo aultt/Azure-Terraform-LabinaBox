@@ -37,6 +37,12 @@ Level 3 can now be run by changing directory in your terminal window Level 3 and
 
 Level 4 completes the landing zones by again switching to Level 4 directory and running terraform init followed by terraform apply. Once complete the infrastructure for your demo/lab environment is now built.  All passwords provided are stored into the private keyvaults which were deployed for future reference.
 
+## OnPrem Configuration
+For the hybrid scenario you will either be leveraging an onprem vpn device or an azure simulated onprem environment.  In either case you will need to configure the vpns on this side manually.  There will be one for each region.  When you create your local network gateways for each region you will need to provide all the address spaces for all corresponding vnets in the region you are configuring.
+Therefore, for region A it will be the following 10.1.0.0/16, 10.3.0.0/16, 10.5.0.0/16, and 10.7.0.0/16.  For region B it will be the following 10.2.0.0/16, 10.4.0.0/16, 10.6.0.0/16 and 10.8.0.0/16.
+
+## Tearing down the environment
+As needed the environment can be easily destroyed.  If you are leaving your on-prem environment up the first thing you will want to do is go to azure automation account.  On the left click State Configuration(DSC). Select each domain conntroller on the right one at a time. After selecting click unregister.  This will prevent DSC from reappling the configuration.  Once complete login to each of the domain controllers created in Landing Zone 3.  After logging on remove the Active Directory Domain Services role.  Selecting it will throw validation results stating you need to demote the domain controller.  Click on the demote this domain controller and continue through the prompts.  This will need to be completed on each domain controller.  Once complete I recommend validating they were successfully removed by looking at Active Directory Users and Computers on the on-prem machine.  You may not leverage terraform to destroy each of the individual zones.  From the terminal window change directory to the Level 4 and run terraform destroy.  Terraform will walk through and remove all the components deployed.  Once complete change directory to the next zone and repeat until you have destroyed all zones.  At this point you are ready to redeploy then next time you need to test/validate.
 
 
 
