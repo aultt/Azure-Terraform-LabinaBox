@@ -8,7 +8,7 @@ variable "tags" {
 }
 
 variable "vm_name" {}
-variable "vm_addr_prefix" {}
+#variable "vm_addr_prefix" {}
 variable "vm_private_ip_addr" {}
 variable "vm_size" {}
 variable "storage_account_type" {}
@@ -22,3 +22,6 @@ variable "dsc_config" {}
 variable "workspace_id" {}
 variable "workspace_key" {}
 variable "dsc_mode" {default="applyAndAutoCorrect"}
+variable "nic_forwarding" {
+    default = "false"
+}

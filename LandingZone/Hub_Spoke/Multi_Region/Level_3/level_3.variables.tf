@@ -72,11 +72,7 @@ variable "jump_host_name" {
     type        = string
     default     = "jumphostvm"
 }
-variable "jump_host_addr_prefix" {
-    type        = string 
-    description = "Azure Jump Host Address Prefix"
-    default     = "10.1.251.0/24"  
-}
+
 variable "jump_host_private_ip_addr" {
     type        = string 
     description = "Azure Jump Host Address"
@@ -139,12 +135,12 @@ variable "dns1_vm_name" {
 variable "dns1_addr_prefix" {
     type        = string 
     description = "Dc1 Address Prefix"
-    default     = "10.3.3.0/24"  
+    default     = "10.1.1.0/24"  
 }
 variable "dns1_private_ip_addr" {
     type        = string 
     description = "DC2 Private IP Address"
-    default     = "10.3.3.6"
+    default     = "10.1.1.5"
 }
 variable "dns1_vm_size" {
     type        = string 
@@ -196,15 +192,11 @@ variable "dns2_vm_name" {
     type        = string
     default     = "awdns001"
 }
-variable "dns2_addr_prefix" {
-    type        = string 
-    description = "Dc1 Address Prefix"
-    default     = "10.4.3.0/24"  
-}
+
 variable "dns2_private_ip_addr" {
     type        = string 
     description = "DC2 Private IP Address"
-    default     = "10.4.3.6"
+    default     = "10.2.1.5"
 }
 variable "dns2_vm_size" {
     type        = string 
@@ -215,6 +207,11 @@ variable "dns2_data_disk_size" {
     type        = string 
     description = "Dc1 data disk Size"
     default     = "20"
+}
+variable "dns2_addr_prefix" {
+    type        = string 
+    description = "Dc1 Address Prefix"
+    default     = "10.2.1.0/24"  
 }
 variable "dns2_storage_account_type" {
     type        = string 
@@ -249,6 +246,11 @@ variable "location" {
     type = string
     default = "eastus"
 } 
+variable "corp_prefix" {
+    type        = string 
+    description = "Corp name Prefix"
+    default     = "tamz"
+}
 
 # LAW module
 
@@ -300,4 +302,24 @@ variable "id_spk_rg_prefix" {
 variable "id_spk_region1_shared_subnet_name" {
     type = string
     default = "shared"
+}
+
+#NVA VMs
+variable "nvaregion1_name" {
+    type        = string
+    default     = "aenva001"
+}
+variable "nvaregion1_private_ip_addr" {
+    type        = string 
+    description = "Azure vm Host Address"
+    default     = "10.1.1.5"
+}
+variable "nvaregion2_name" {
+    type        = string
+    default     = "awnva001"
+}
+variable "nvaregion2_private_ip_addr" {
+    type        = string 
+    description = "Azure vm Host Address"
+    default     = "10.2.1.5"
 }

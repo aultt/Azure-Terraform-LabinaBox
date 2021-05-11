@@ -5,8 +5,14 @@ data "http" "myip" {
   url = "http://ipv4.icanhazip.com"
 }
 
+resource "random_string" "random" {
+  length = 8
+  upper = false
+  special = false
+
+}
 resource "azurerm_storage_account" "private" {
-  name                     = "${var.storage_prefix}storageacct"
+  name                     = "${var.storage_prefix}sa${random_string.random.result}"
   resource_group_name      = var.resource_group_name
   location                 = var.location
   account_tier             = var.account_tier

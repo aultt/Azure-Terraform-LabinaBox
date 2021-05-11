@@ -274,3 +274,14 @@ variable "dc2_private_ip_addr" {
     description = "DC2 Private IP Address"
     default     = "10.4.3.5"
 }
+
+variable "dns_nva2_private_ip_addr" {
+    type        = string 
+    description = "DC2 Private IP Address"
+    default     = "10.2.1.5"
+}
+variable "dns_nva1_private_ip_addr" {
+    type        = string 
+    description = "DC1 Private IP Address"
+    default     = "10.1.1.5"
+}

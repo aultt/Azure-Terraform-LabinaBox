@@ -44,7 +44,7 @@ variable "dc_region1_ip" {
 variable "dns_region1_ip" {
     type        = string 
     description = "Ip address of Domain controller for Region2"
-    default = "10.3.3.6"
+    default = "10.1.1.5"
 }
 variable "dc_region2_ip" {
     type        = string 
@@ -54,7 +54,7 @@ variable "dc_region2_ip" {
 variable "dns_region2_ip" {
     type        = string 
     description = "Ip address of Domain controller for Region2"
-    default = "10.4.3.6"
+    default = "10.1.1.5"
 }
 
 variable "lz_address_space_region1" {

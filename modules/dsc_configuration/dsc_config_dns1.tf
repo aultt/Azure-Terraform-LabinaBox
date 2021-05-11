@@ -14,6 +14,7 @@ Import-DSCResource -ModuleName ActiveDirectoryDsc
 Import-DSCResource -ModuleName ComputerManagementDsc
 Import-DSCResource -ModuleName xTimeZone
 Import-DSCResource -ModuleName xDnsServer
+Import-DSCResource -ModuleName NetworkingDsc
 
 $domain_login = Get-AutomationPSCredential -Name "domain_admin"
 
@@ -38,6 +39,20 @@ Node "localhost"
       FSFormat ='NTFS'
       AllocationUnitSize = 64kb
     DependsOn="[WaitForDisk]Disk2"
+  }
+
+  Registry EnableIpRouter
+  {
+      Ensure = "Present"
+      key = "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\IpEnableRouter"
+      ValueName = "1"
+  }
+
+  NetIPInterface EnableForwarding
+  {
+      InterfaceAlias = '*'
+      AddressFamily  = 'IPv4'
+      Forwarding    = 'Enabled'
   }
 
   File 'ADFiles'
@@ -71,7 +86,7 @@ Node "localhost"
        DomainName = "${var.domain_name}"
        Credential = $domain_login
        
-       DependsOn = '[WaitForADDomain]WaitForestAvailability'
+       DependsOn = '[WaitForADDomain]WaitForestAvailability','[NetIPInterface]EnableForwarding','[Registry]EnableIpRouter'
    }
 
    WindowsFeature DNS_RSAT
@@ -146,6 +161,13 @@ Node "localhost"
        DependsOn = '[WindowsFeature]DNS'
    }
    
+   xDnsServerConditionalForwarder 'privateweb'
+   {
+       Name             = 'privatelink.azurewebsites.azure.net'
+       MasterServers    = '168.63.129.16'
+       ReplicationScope = 'None'
+       DependsOn = '[WindowsFeature]DNS'
+   }
 }
 }
 CONFIG

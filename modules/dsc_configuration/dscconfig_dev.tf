@@ -16,7 +16,7 @@ resource "azurerm_automation_dsc_configuration" "dsc_dev" {
   content_embedded = <<CONFIG
 configuration devConfig
 {
-
+Import-DSCResource -ModuleName StorageDsc
 Import-DSCResource -ModuleName cChoco
 Import-DSCResource -ModuleName ActiveDirectoryDsc
 Import-DSCResource -ModuleName ComputerManagementDsc
@@ -32,7 +32,22 @@ Node "localhost"
        ActionAfterReboot = 'ContinueConfiguration'
        AllowModuleOverwrite = $true
    }
-   
+  
+  WaitforDisk Disk2
+  {
+        DiskId = "2"
+        RetryIntervalSec = 30
+        RetryCount = 20
+  }
+
+  Disk ADDataDisk2
+  {
+      DiskId = "2"
+      DriveLetter = "F"
+      FSFormat ='NTFS'
+      AllocationUnitSize = 64kb
+    DependsOn="[WaitForDisk]Disk2"
+  }
   xTimeZone SetTimeZone
   {
       IsSingleInstance = 'Yes'

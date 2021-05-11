@@ -42,7 +42,18 @@ data "azurerm_virtual_network" "hub_region2" {
   name                = "${var.hub_vnet_name_prefix}-${var.region2_loc}"
   resource_group_name = "${var.hub_rg_prefix}-${var.region2_loc}-rg"
 }
-
+data "azurerm_subnet" "hub_default_subnet_region1" {
+  provider = azurerm.connectivity
+  name                 = "default"
+  resource_group_name  = "${var.hub_rg_prefix}-${var.region1_loc}-rg"
+  virtual_network_name = "${var.hub_vnet_name_prefix}-${var.region1_loc}"
+}
+data "azurerm_subnet" "hub_default_subnet_region2" {
+  provider = azurerm.connectivity
+  name                 = "default"
+  resource_group_name  = "${var.hub_rg_prefix}-${var.region2_loc}-rg"
+  virtual_network_name = "${var.hub_vnet_name_prefix}-${var.region2_loc}"
+}
 data "azurerm_virtual_network" "id_spk_region1" {
   provider = azurerm.identity
   name                = "${var.id_spk_vnet_name_prefix}-${var.region1_loc}"
@@ -81,6 +92,18 @@ data "azurerm_log_analytics_workspace" "law" {
   resource_group_name = var.svc_resource_group_name
 }
 
+data "azurerm_route_table" "Identity_Region1" {
+  provider = azurerm.Identity
+  name = "RT-${var.id_spk_rg_prefix}-${var.region1_loc}" 
+  resource_group_name = "${var.id_spk_rg_prefix}-${var.region1_loc}-rg"
+}
+
+data "azurerm_route_table" "Identity_Region2" {
+  provider = azurerm.Identity
+  name = "RT-${var.id_spk_rg_prefix}-${var.region2_loc}" 
+  resource_group_name = "${var.id_spk_rg_prefix}-${var.region2_loc}-rg"
+}
+
 module "id_spk_region1_infra_subnet_Region1"{
   providers = {azurerm = azurerm.identity}
   source = "../../../../modules/networking/subnet"
@@ -89,6 +112,12 @@ module "id_spk_region1_infra_subnet_Region1"{
   location = var.region1_loc
   subnet_name = var.id_spk_region1_infra_subnet_name
   subnet_prefixes = [var.id_spk_region1_infra_subnet_addr]
+}
+
+resource "azurerm_subnet_route_table_association" "infra_Region1" {
+  provider = azurerm.identity
+  subnet_id      = module.id_spk_region1_infra_subnet_Region1.subnet_id
+  route_table_id = data.azurerm_route_table.Identity_Region1.id
 }
 
 module "id_spk_region2_infra_subnet_Region2"{
@@ -101,13 +130,18 @@ module "id_spk_region2_infra_subnet_Region2"{
   subnet_prefixes = [var.id_spk_region2_infra_subnet_addr]
 }
 
+resource "azurerm_subnet_route_table_association" "infra_Region2" {
+  provider = azurerm.identity
+  subnet_id      = module.id_spk_region1_infra_subnet_Region2.subnet_id
+  route_table_id = data.azurerm_route_table.Identity_Region2.id
+}
+
 module "dev_vm" { 
     providers = {azurerm = azurerm.connectivity}
     source = "../../../../modules//virtual_machine"
     resource_group_name = data.azurerm_virtual_network.hub_region1.resource_group_name
     location = data.azurerm_virtual_network.hub_region1.location
     vm_name = var.jump_host_name
-    vm_addr_prefix = var.jump_host_addr_prefix
     vm_private_ip_addr = var.jump_host_private_ip_addr
     vm_size = var.jump_host_vm_size
     vm_admin_username  = var.local_admin_username
@@ -128,7 +162,6 @@ module "DC1_vm" {
     resource_group_name = data.azurerm_virtual_network.id_spk_region1.resource_group_name
     location = data.azurerm_virtual_network.id_spk_region1.location
     vm_name = var.dc1_vm_name
-    vm_addr_prefix = var.dc1_addr_prefix
     vm_private_ip_addr = var.dc1_private_ip_addr
     vm_size = var.dc1_vm_size
     vm_admin_username  = var.local_admin_username
@@ -142,35 +175,12 @@ module "DC1_vm" {
     workspace_id  = data.azurerm_automation_account.dsc.id             
     workspace_key = data.azurerm_automation_account.dsc.primary_key
 }
-
-module "Dns1_vm" { 
-    providers = {azurerm = azurerm.identity}
-    source = "../../../../modules//virtual_machine"
-    resource_group_name = data.azurerm_virtual_network.id_spk_region1.resource_group_name
-    location = data.azurerm_virtual_network.id_spk_region1.location
-    vm_name = var.dns1_vm_name
-    vm_addr_prefix = var.dns1_addr_prefix
-    vm_private_ip_addr = var.dns1_private_ip_addr
-    vm_size = var.dns1_vm_size
-    vm_admin_username  = var.local_admin_username
-    vm_admin_password  = var.local_admin_password
-    subnet_id = module.id_spk_region1_infra_subnet_Region1.subnet_id
-    storage_account_type = var.dns1_storage_account_type
-    data_disk_size_gb = var.dns1_data_disk_size
-    dsc_config                     = "Dns1Config.localhost"
-    dsc_key                        = data.azurerm_automation_account.dsc.primary_key
-    dsc_endpoint                   = data.azurerm_automation_account.dsc.endpoint
-    workspace_id  = data.azurerm_automation_account.dsc.id             
-    workspace_key = data.azurerm_automation_account.dsc.primary_key
-}
-
 module "DC2_vm" { 
     providers = {azurerm = azurerm.identity}
     source = "../../../../modules//virtual_machine"
     resource_group_name = data.azurerm_virtual_network.id_spk_region2.resource_group_name
     location = data.azurerm_virtual_network.id_spk_region2.location
     vm_name = var.dc2_vm_name
-    vm_addr_prefix = var.dc2_addr_prefix
     vm_private_ip_addr = var.dc2_private_ip_addr
     vm_size = var.dc2_vm_size
     vm_admin_username  = var.local_admin_username
@@ -185,20 +195,40 @@ module "DC2_vm" {
     workspace_key = data.azurerm_automation_account.dsc.primary_key
 }
 
-module "Dns2_vm" { 
-    providers = {azurerm = azurerm.identity}
+module "Dns1_vm" { 
+    providers = {azurerm = azurerm.connectivity}
     source = "../../../../modules//virtual_machine"
-    resource_group_name = data.azurerm_virtual_network.id_spk_region2.resource_group_name
-    location = data.azurerm_virtual_network.id_spk_region2.location
+    resource_group_name = data.azurerm_virtual_network.hub_region1.resource_group_name
+    location = data.azurerm_virtual_network.hub_region1.location
+    vm_name = var.dns1_vm_name
+    vm_private_ip_addr = var.dns1_private_ip_addr
+    vm_size = var.dns1_vm_size
+    vm_admin_username  = var.local_admin_username
+    vm_admin_password  = var.local_admin_password
+    subnet_id = data.azurerm_subnet.hub_default_subnet_region1.id
+    storage_account_type = var.dns1_storage_account_type
+    data_disk_size_gb = var.dns1_data_disk_size
+    nic_forwarding = "true"
+    dsc_config                     = "Dns1Config.localhost"
+    dsc_key                        = data.azurerm_automation_account.dsc.primary_key
+    dsc_endpoint                   = data.azurerm_automation_account.dsc.endpoint
+    workspace_id  = data.azurerm_automation_account.dsc.id             
+    workspace_key = data.azurerm_automation_account.dsc.primary_key
+}
+module "Dns2_vm" { 
+    providers = {azurerm = azurerm.connectivity}
+    source = "../../../../modules//virtual_machine"
+    resource_group_name = data.azurerm_virtual_network.hub_region2.resource_group_name
+    location = data.azurerm_virtual_network.hub_region2.location
     vm_name = var.dns2_vm_name
-    vm_addr_prefix = var.dns2_addr_prefix
     vm_private_ip_addr = var.dns2_private_ip_addr
     vm_size = var.dns2_vm_size
     vm_admin_username  = var.local_admin_username
     vm_admin_password  = var.local_admin_password
-    subnet_id = module.id_spk_region2_infra_subnet_Region2.subnet_id
+    subnet_id = data.azurerm_subnet.hub_default_subnet_region2.id
     storage_account_type = var.dns2_storage_account_type
     data_disk_size_gb = var.dns2_data_disk_size
+    nic_forwarding = "true"
     dsc_config                     = "Dns2Config.localhost"
     dsc_key                        = data.azurerm_automation_account.dsc.primary_key
     dsc_endpoint                   = data.azurerm_automation_account.dsc.endpoint

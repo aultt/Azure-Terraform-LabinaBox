@@ -27,6 +27,12 @@ variable "sandbox_subscription_id" {
     default = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 }
 
+variable "corp_prefix" {
+    type        = string 
+    description = "Corp name Prefix"
+    default     = "prefix"
+}
+
 variable "region1_loc" {
   default = "eastus"
 }
@@ -62,4 +68,47 @@ variable "lz_vnet_name_prefix" {
 variable "lz_spk_rg_prefix" {
     type = string
     default =  "net-lz-spk"
+}
+# Dev Vm
+variable "vm_name" {
+    type        = string
+    default     = "corplzdev001"
+}
+variable "vm_private_ip_addr" {
+    type        = string 
+    description = "Azure vm Host Address"
+    default     = "10.5.1.10"
+}
+variable "vm_size" {
+    type        = string 
+    description = "Azure vm Host VM SKU"
+    default     = "Standard_B2ms"
+}
+variable "vm_data_disk_size" {
+    type        = string 
+    description = "vmhost  data disk Size"
+    default     = "20"
+}
+variable "vm_storage_account_type" {
+    type        = string 
+    description = "vm host storage account type"
+    default     = "Standard_LRS"
+}
+variable "vm_subnet_name" {
+    type        = string 
+    default = "default"
+}
+variable "local_admin_username" {
+    type        = string 
+    description = "Azure Admin Username"
+    default = "azureadmin"
+}
+variable "local_admin_password" {
+    sensitive   = true
+    type        = string 
+}
+variable "svc_resource_group_name" {
+    type        = string 
+    description = "Shared Services Resource Group"
+    default     = "svc-core-prod-rg"
 }

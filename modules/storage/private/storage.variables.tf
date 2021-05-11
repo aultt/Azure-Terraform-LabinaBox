@@ -5,7 +5,7 @@ variable "account_tier" {
     default = "Standard"
 }
 variable "account_replication_type" {
-    default = "ZRS"
+    default = "LRS"
 }
 variable "subnet_id" {}
 variable "storage_zone_name" {}
