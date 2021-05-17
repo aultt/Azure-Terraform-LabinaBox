@@ -108,6 +108,7 @@ module "hub_region1_jumphost_subnet"{
 }
 
 resource "azurerm_subnet_route_table_association" "default" {
+  provider = azurerm.connectivity
   subnet_id      = module.hub_region1_jumphost_subnet.subnet_id
   route_table_id = azurerm_route_table.Hub-Region1.id
 }

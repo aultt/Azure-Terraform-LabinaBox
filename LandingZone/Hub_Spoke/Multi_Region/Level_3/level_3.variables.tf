@@ -246,14 +246,8 @@ variable "location" {
     type = string
     default = "eastus"
 } 
-variable "corp_prefix" {
-    type        = string 
-    description = "Corp name Prefix"
-    default     = "tamz"
-}
 
 # LAW module
-
 variable law_prefix {
     type       = string
     default    = "law"
