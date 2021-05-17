@@ -93,13 +93,13 @@ data "azurerm_log_analytics_workspace" "law" {
 }
 
 data "azurerm_route_table" "Identity_Region1" {
-  provider = azurerm.Identity
+  provider = azurerm.identity
   name = "RT-${var.id_spk_rg_prefix}-${var.region1_loc}" 
   resource_group_name = "${var.id_spk_rg_prefix}-${var.region1_loc}-rg"
 }
 
 data "azurerm_route_table" "Identity_Region2" {
-  provider = azurerm.Identity
+  provider = azurerm.identity
   name = "RT-${var.id_spk_rg_prefix}-${var.region2_loc}" 
   resource_group_name = "${var.id_spk_rg_prefix}-${var.region2_loc}-rg"
 }
@@ -132,7 +132,7 @@ module "id_spk_region2_infra_subnet_Region2"{
 
 resource "azurerm_subnet_route_table_association" "infra_Region2" {
   provider = azurerm.identity
-  subnet_id      = module.id_spk_region1_infra_subnet_Region2.subnet_id
+  subnet_id      = module.id_spk_region2_infra_subnet_Region2.subnet_id
   route_table_id = data.azurerm_route_table.Identity_Region2.id
 }
 
