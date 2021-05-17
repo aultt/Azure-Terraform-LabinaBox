@@ -45,12 +45,6 @@ data "azurerm_virtual_network" "hub_region2" {
   name                = "${var.hub_vnet_name_prefix}-${var.region2_loc}"
   resource_group_name = "${var.hub_rg_prefix}-${var.region2_loc}-rg"
 }
-data "azurerm_subnet" "hub_default_subnet" {
-  provider = azurerm.connectivity
-  name                 = "default"
-  resource_group_name  = "${var.hub_rg_prefix}-${var.region1_loc}-rg"
-  virtual_network_name = "${var.hub_vnet_name_prefix}-${var.region1_loc}"
-}
 
 data "azurerm_virtual_network" "lz_spk_region1" {
   provider = azurerm.landingzone

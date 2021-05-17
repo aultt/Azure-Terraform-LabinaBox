@@ -26,13 +26,11 @@ variable "sandbox_subscription_id" {
     description = "Subscription Id for SandBox subscription"
     default = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 }
-
 variable "corp_prefix" {
     type        = string 
     description = "Corp name Prefix"
-    default     = "prefix"
+    default     = "corp"
 }
-
 variable "region1_loc" {
   default = "eastus"
 }
@@ -69,6 +67,7 @@ variable "lz_spk_rg_prefix" {
     type = string
     default =  "net-lz-spk"
 }
+
 # Dev Vm
 variable "vm_name" {
     type        = string
