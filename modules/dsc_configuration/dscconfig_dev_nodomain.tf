@@ -1,20 +1,20 @@
-resource "azurerm_automation_module" "choco" {
-  name                    = "cchoco"
-  resource_group_name     = var.resource_group_name
-  automation_account_name = var.automation_account_name
+#resource "azurerm_automation_module" "choco_nodc" {
+#  name                    = "cchoco"
+#  resource_group_name     = var.resource_group_name
+#  automation_account_name = var.automation_account_name
+#
+#  module_link {
+#    uri = "https://psg-prod-eastus.azureedge.net/packages/cchoco.2.5.0.nupkg"
+#  }
+#}
 
-  module_link {
-    uri = "https://psg-prod-eastus.azureedge.net/packages/cchoco.2.5.0.nupkg"
-  }
-}
-
-resource "azurerm_automation_dsc_configuration" "dsc_dev" {
-  name                    = "devConfig"
+resource "azurerm_automation_dsc_configuration" "dsc_dev_nodc" {
+  name                    = "devConfigNoDomain"
   automation_account_name = var.automation_account_name
   location            = var.location
   resource_group_name = var.resource_group_name
   content_embedded = <<CONFIG
-configuration devConfig
+configuration devConfigNoDomain
 {
 Import-DSCResource -ModuleName StorageDsc
 Import-DSCResource -ModuleName cChoco
@@ -59,24 +59,6 @@ Node "localhost"
      Name             = 'High performance'
    }
 
-   WaitForADDomain WaitForestAvailability
-    {
-        DomainName = "${var.domain_name}"
-        Credential = $domain_login
-        WaitForValidCredentials = $true
-        WaitTimeout = 2400
-
-    }
-    
-   Computer DomainJoin
-   {
-       Name       = "${var.jump_host_name}"
-       DomainName = "${var.domain_name}"
-       Credential = $domain_login
-
-       DependsOn = '[WaitForADDomain]WaitForestAvailability'
-   }
-
    cChocoInstaller installChoco
    {
      InstallDir = "c:\choco"
@@ -87,47 +69,17 @@ Node "localhost"
        Ensure               = 'Present'
        DependsOn            = '[cChocoInstaller]installChoco'
    }
-   cChocoPackageInstaller installAzureDataStudio
-   {
-       Name                 = 'azure-data-studio'
-       Ensure               = 'Present'
-       DependsOn            = '[cChocoInstaller]installChoco'
-   }
-   cChocoPackageInstaller installAzureDataStudioExt1
-   {
-       Name                 = 'azure-data-studio-sql-server-admin-pack'
-       Ensure               = 'Present'
-       DependsOn            = '[cChocoPackageInstaller]installAzureDataStudio'
-   }
-   cChocoPackageInstaller installAzureDataStudioExt2
-   {
-       Name                 = 'azuredatastudio-powershell'
-       Ensure               = 'Present'
-       DependsOn            = '[cChocoPackageInstaller]installAzureDataStudio'
-   }
    cChocoPackageInstaller azcopy
    {
        Name                 = 'azcopy10'
        Ensure               = 'Present'
-       DependsOn            = '[cChocoPackageInstaller]installAzureDataStudio'
-   }
-   cChocoPackageInstaller sqlservermgmtstudio
-   {
-       Name                 = 'sql-server-management-studio'
-       Ensure               = 'Present'
-       DependsOn            = '[cChocoPackageInstaller]installAzureDataStudio'
+       DependsOn            = '[cChocoInstaller]installChoco'
    }
    cChocoPackageInstaller vscode
    {
        Name                 = 'vscode'
        Ensure               = 'Present'
-       DependsOn            = '[cChocoPackageInstaller]installAzureDataStudio'
-   }
-   cChocoPackageInstaller vscodemssql
-   {
-       Name                 = 'vscode-mssql'
-       Ensure               = 'Present'
-       DependsOn            = '[cChocoPackageInstaller]vscode'
+       DependsOn            = '[cChocoInstaller]installChoco'
    }
    cChocoPackageInstaller vscodepowershell
    {

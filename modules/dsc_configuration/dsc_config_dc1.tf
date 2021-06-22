@@ -65,6 +65,7 @@ configuration DC1config
 Import-DSCResource -ModuleName StorageDsc
 Import-DSCResource -ModuleName ActiveDirectoryDsc
 Import-DSCResource -ModuleName NetworkingDsc
+Import-DSCResource -ModuleName xTimeZone
 Import-DSCResource -ModuleName ComputerManagementDsc
 
 $domain_login = Get-AutomationPSCredential -Name "domain_admin"

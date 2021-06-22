@@ -33,6 +33,7 @@ resource "azurerm_subnet_network_security_group_association" "subnet_nsg_assoc" 
 }
 
 resource "azurerm_subnet_route_table_association" "default" {
+  count = var.route_table_add ? 1 : 0
   subnet_id      = azurerm_subnet.vnet.id
   route_table_id = var.route_table_id
 }

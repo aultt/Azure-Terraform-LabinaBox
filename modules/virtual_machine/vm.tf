@@ -26,9 +26,9 @@ resource "azurerm_virtual_machine" "vm" {
   vm_size               = var.vm_size
  
   storage_image_reference {
-    publisher = "MicrosoftWindowsServer"
-    offer     = "WindowsServer"
-    sku       = "2019-Datacenter"
+    publisher = var.publisher
+    offer     = var.offer
+    sku       = var.sku 
     version   = "latest"
  }
  
@@ -107,5 +107,9 @@ resource "azurerm_virtual_machine_extension" "dsc" {
       }
     }
 PROTECTED_SETTINGS
+  timeouts {
+      create = "60m"
+      delete = "2h"
+  }
 }
 

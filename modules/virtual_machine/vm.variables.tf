@@ -25,3 +25,6 @@ variable "dsc_mode" {default="applyAndAutoCorrect"}
 variable "nic_forwarding" {
     default = "false"
 }
+variable "publisher" { default = "MicrosoftWindowsServer" }
+variable "offer" { default = "MicrosoftWindowsServer" }
+variable "sku" { default = "2019-Datacenter" }   
