@@ -253,7 +253,7 @@ resource "null_resource" "PowerShellCompileDSC"{
     }
     provisioner "local-exec" {
         command = ".'${path.module}/PowerShell/compileDSCConfigurationwithParam.ps1' -subscriptionId ${var.poc_subscription_id} -resourceGroupName ${azurerm_resource_group.svc_rg.name} -automationAccountName ${module.automation_account.name}"
-        interpreter = ["Pwsh","-Command"]    
+        interpreter = ["pwsh","-Command"]    
   }
   depends_on = [module.DSC_config]
 }
