@@ -121,13 +121,13 @@ resource "azurerm_virtual_machine_extension" "vm1extension" {
 
   settings = <<SETTINGS
     {
-        "fileUris":["https://raw.githubusercontent.com/aultt/ProofOfConcepts/master/scripts/oracle-linux-ansible.sh"]
+        "fileUris":["https://raw.githubusercontent.com/aultt/Azure-Terraform-LabinaBox/main/AppZone/Hub_Spoke/Single_Region/Oracle_Single/bash/oracle-setup-ansible.sh"]
     }
 SETTINGS
 
   protected_settings = <<PROTECTED_SETTINGS
     {
-        "commandToExecute": ". ./oracle-linux-ansible.sh"
+        "commandToExecute": ". ./oracle-setup-ansible.sh"
     }
 PROTECTED_SETTINGS
 }
