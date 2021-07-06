@@ -58,6 +58,15 @@ module "oracle_vm" {
     subnet_id = data.azurerm_subnet.lz_default_subnet_region1.id
     vm_admin_username = var.admin_username
     enable_accelerated_networking = var.enable_accelerated_networking
+    grid_password = var.grid_password
+    oracle_password = var.oracle_password
+    root_password = var.root_password
+    swap_size = var.swap_size
+    grid_storage_url = var.grid_storage_url
+    ora_sys_password = var.ora_sys_password
+    ora_system_password = var.ora_system_password
+    ora_monitor_password = var.ora_monitor_password
+    oracle_database_name= var.oracle_database_name
 }
 
 module "data_disks"{

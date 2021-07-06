@@ -21,3 +21,12 @@ variable "vm_offer"     { default = "oracle-database-19-3"}
 variable "vm_sku"       { default = "oracle-database-19-0904"} 
 variable "vm_version"   { default =  "latest"}
 variable "enable_accelerated_networking" {}
+variable "grid_password" {}
+variable "oracle_password" {}
+variable "root_password" {}
+variable "swap_size" {}
+variable "grid_storage_url" {}
+variable "ora_sys_password" {}
+variable "ora_system_password" {}
+variable "ora_monitor_password" {}
+variable "oracle_database_name" {}

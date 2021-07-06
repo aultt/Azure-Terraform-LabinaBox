@@ -52,66 +52,6 @@ resource "azurerm_linux_virtual_machine" "vm" {
   }
 }
 
-#resource "azurerm_managed_disk" "asm_disks" {
-#    count = var.asm_disk_count
-#    name                 = "${var.vm_name}-asm-disk${count.index}"  
-#    #name                 = "${var.vm_name}-asm-disk"  
-#    location             = var.location
-#    resource_group_name  = var.resource_group_name
-#    storage_account_type = var.storage_account_type
-#    create_option        = "Empty"
-#    disk_size_gb         = var.asm_disk_size_gb
-#}
-
-#resource "azurerm_virtual_machine_data_disk_attachment" "asm_disks_attachment" {
-#  count = var.asm_disk_count
-#  managed_disk_id    = azurerm_managed_disk.asm_disks[count.index].id
-#  #managed_disk_id    = azurerm_managed_disk.asm_disks.id
-#  virtual_machine_id = azurerm_linux_virtual_machine.vm.id
-#  lun = count.index+10
-#  #lun = 10
-#  caching            = "ReadWrite"
-#}
-
-#resource "azurerm_managed_disk" "data_disks" {
-#    count = var.data_disk_count
-#    name                 = "${var.vm_name}-data-disk-${count.index}"  
-#    location             = var.location
-#    resource_group_name  = var.resource_group_name
-#    storage_account_type = var.storage_account_type
-#    create_option        = "Empty"
-#    disk_size_gb         = var.data_disk_size_gb
-#}
-#
-#resource "azurerm_virtual_machine_data_disk_attachment" "data_disks_attachment" {
-#  count = var.data_disk_count
-#  managed_disk_id    = azurerm_managed_disk.data_disks[count.index].id
-#  virtual_machine_id = azurerm_linux_virtual_machine.vm.id
-#  lun = count.index+20
-#  caching            = "ReadOnly"
-#}
-
-#resource "azurerm_managed_disk" "redo_disks" {
-#    count = var.redo_disk_count
-#    name                 = "${var.vm_name}-redo-disk-${count.index}"  
-#    #name                 = "${var.vm_name}-redo-disk"
-#    location             = var.location
-#    resource_group_name  = var.resource_group_name
-#    storage_account_type = var.storage_account_type
-#    create_option        = "Empty"
-#    disk_size_gb         = var.redo_disk_size_gb
-#}
-#
-#resource "azurerm_virtual_machine_data_disk_attachment" "redo_disks_attachment" {
-#  count = var.redo_disk_count
-#  managed_disk_id    = azurerm_managed_disk.redo_disks[count.index].id
-#  #managed_disk_id    = azurerm_managed_disk.redo_disks.id
-#  virtual_machine_id = azurerm_linux_virtual_machine.vm.id
-#  lun = count.index+60
-#  #lun =30
-#  caching            = "ReadWrite"
-#}
-
 resource "azurerm_virtual_machine_extension" "vm1extension" {
   name                 = var.vm_name
   virtual_machine_id   = azurerm_linux_virtual_machine.vm.id
@@ -121,13 +61,19 @@ resource "azurerm_virtual_machine_extension" "vm1extension" {
 
   settings = <<SETTINGS
     {
-        "fileUris":["https://raw.githubusercontent.com/aultt/Azure-Terraform-LabinaBox/main/AppZone/Hub_Spoke/Single_Region/Oracle_Single/bash/oracle-setup-ansible.sh"]
+        "fileUris":[
+          "https://raw.githubusercontent.com/aultt/Azure-Terraform-LabinaBox/main/AppZone/Hub_Spoke/Single_Region/Oracle_Single/bash/oracle-setup-ansible.sh",
+          "https://raw.githubusercontent.com/aultt/Azure-Terraform-LabinaBox/main/AppZone/Hub_Spoke/Single_Region/Oracle_Single/ansible/Configure-ASM-server.yml",
+          "https://raw.githubusercontent.com/aultt/Azure-Terraform-LabinaBox/main/AppZone/Hub_Spoke/Single_Region/Oracle_Single/files/dbca19.rsp",
+          "https://raw.githubusercontent.com/aultt/Azure-Terraform-LabinaBox/main/AppZone/Hub_Spoke/Single_Region/Oracle_Single/files/gridsetup.rsp"
+        ]
+        
     }
 SETTINGS
 
   protected_settings = <<PROTECTED_SETTINGS
     {
-        "commandToExecute": ". ./oracle-setup-ansible.sh"
+        "commandToExecute": ". ./oracle-setup-ansible.sh -g '${var.grid_password}' -o '${var.oracle_password}' -r '${var.root_password}' -w '${var.swap_size}' -u '${var.grid_storage_url}' -y '${var.ora_sys_password}' -s '${var.ora_system_password}' -m '${var.ora_monitor_password}' -d '${var.oracle_database_name}'"
     }
 PROTECTED_SETTINGS
 }
