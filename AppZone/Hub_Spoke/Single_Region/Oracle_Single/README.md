@@ -4,11 +4,8 @@ Terraform deployment to build a Azure virtual machine by passing variables to al
 # Dependencies
 Engineer deploying needs to have the following:
 1. [Terraform](https://learn.hashicorp.com/tutorials/terraform/install-cli?in=terraform/azure-get-started)
-2. [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
 3. [Visual Studio Code](https://code.visualstudio.com/)
 4. [Clone of GitHub Repo](https://github.com/aultt/Azure-Terraform-LabinaBox) 
-5. Deployment of Landing zone from Repo referenced above.
-    Multi-Region or Single-Region Landingzone can be deployed.  Single region is easier as it doesn't require domain or vpn to be created.  These are included however they have not been tested fully. If you leverage multi-region you can deploy Oracle Vm from on-prem.  If not there is no vpn and therefore you will need to deploy from the Jump host machine deployed.  This will require you follow these steps again on the jump host.
 6. Download of [Grid Infrastructure](https://www.oracle.com/database/technologies/oracle19c-linux-downloads.html) stored into an Azure Storage Account.  
 7. Creation of a SAS token to leverage file referenced above.
 
@@ -16,28 +13,23 @@ Engineer deploying needs to have the following:
 Prior to deploying the Oracle you will want to look over and confirm/modify variables within the deployment.  
 
 ## Template Variable File
-A Sample variable file has been provided with the required variables which should be configured.  Variable file is named oracle_template.tfvars  Any additional variables you would like to change can be added to this file. Once updated you can run the following terraform init -var-file=oracle_template.tfvars followed by terraform apply -var-file=oracle_template.tfvars
+A Sample variable file has been provided with the required variables which should be configured.  Variable file is named oracle_template.tfvars.  Any additional variables you would like to change can be added to this file. Once updated you can run the following: terraform init -var-file=oracle_template.tfvars followed by terraform apply -var-file=oracle_template.tfvars. Its recommended to create a copy of the variables file and change the template to your name or something else to identify it.  This will prevent it from be merged back to github as there is an ignore for all other .tvars files.  After Terraform has been deployed there is an additional step to deploy the oracle configuration.  Connect to the VM with Bastion, which was created as part of the deployment.  If you accepted the defaults the username is azureadmin, for authentication select SSH Private Key from Azure Key Vault.  The Subscription, KevVault and Secret should auto-select.  Click Connect.  You should now be in the VM.  Type ls, you should see two files in your home directory, Configure-ASM-server.yml and deployoracle.sh.  The yml file is the ansible playbook while the sh file is the command with required parameters to deploy the playbook.  Execute by typing . ./deployoracle.sh the playbook will deploy oracle and should complete in around 15min.  You are now ready to connect to oracle run some tests or create tables.
 
 ## Variables which must be updated
-1. landingzone_subscription_id
-2. identity_subscription_id - This will be the same as above if using Single_Region
-3. grid_password
-4. oracle_password
-5. root_password
-6. oracle_sys_password
-7. oracle_system_password
-8. oracle_monitor_password
+1. grid_password
+2. oracle_password
+3. root_password
+4. oracle_sys_password
+5. oracle_system_password
+6. oracle_monitor_password
 
 ## Variables which can be updated if you deviated from default
-1. corp_prefix              default: prefix
-2. id_spk_rg_prefix         default: net-id-spk
-3. region1_loc              default: eastus
-4. lz_vnet_name_prefix      default: vnet-lz-spk
-5. lz_spk_rg_prefix         default: net-lz-spk
-6. vm_subnet_name           default: default
+1. vnet_name                default: vnet-lz-spk-eastus2
+2. key_vault_name           default: kv-labiac-eastus2
+3. location                 default: eastus2
 7. admin_username           default: azureadmin
 8. vm_name                  default: oracledev01 
-9. vm_private_ip_addr       default: 10.5.1.15
+9. vm_private_ip_addr       default: 10.1.1.15
 10. oracle_database_name    default: mytestdb
 
 ## Variables which can be updated for different performance tests

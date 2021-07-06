@@ -10,52 +10,56 @@ provider "azurerm" {
     features {} 
 }
 
-provider "azurerm" {
-    features {} 
-    alias = "landingzone"
-    subscription_id = var.landingzone_subscription_id
-}
-provider "azurerm" {
-    features {} 
-    alias = "identity"
-    subscription_id = var.identity_subscription_id
-}
-
-data "azurerm_virtual_network" "lz_spk_region1" {
-  provider = azurerm.landingzone
-  name                = "${var.lz_vnet_name_prefix}-${var.region1_loc}"
-  resource_group_name = "${var.lz_spk_rg_prefix}-${var.region1_loc}-rg"
-}
-
-data "azurerm_key_vault" "Region1_vault" {
-  provider = azurerm.identity
-  resource_group_name = "${var.id_spk_rg_prefix}-${var.region1_loc}-rg"
-  name = "kv-${var.corp_prefix}-${var.region1_loc}" 
-}
-
-data "azurerm_subnet" "lz_default_subnet_region1" {
-  provider = azurerm.landingzone
-  name                 = "default"
-  resource_group_name  = "${var.lz_spk_rg_prefix}-${var.region1_loc}-rg"
-  virtual_network_name = "${var.lz_vnet_name_prefix}-${var.region1_loc}"
-}
-
-resource "azurerm_resource_group" "oracle_region1" {
-  provider = azurerm.landingzone
-  name     = "oracle-${var.region1_loc}-rg"
-  location = var.region1_loc
+resource "azurerm_resource_group" "oracle_resource_group" {
+  name     = "oracle-${var.location}-rg"
+  location = var.location
   tags     = var.tags
 }
 
+module "vnet" {
+  source = "../../../../modules/networking/vnet"
+  resource_group_name = azurerm_resource_group.oracle_resource_group.name
+  location            = var.location
+  vnet_name             = var.vnet_name
+  address_space         = var.vnet_address_space
+  default_subnet_prefixes = [var.vnet_default_subnet]
+  dns_servers = var.dns_servers
+  route_table_add=false
+}
+
+module "vnet_shared_subnet"{
+  source = "../../../../modules//networking/subnet"
+  resource_group_name = azurerm_resource_group.oracle_resource_group.name
+  vnet_name = module.vnet.vnet_name
+  location = var.location
+  subnet_name = var.shared_subnet_name
+  subnet_prefixes = [var.shared_subnet_addr]
+}
+
+module "shared_keyvault_dns_zone"{
+  source = "../../../../modules//private_dns/zone"
+  resource_group_name = azurerm_resource_group.oracle_resource_group.name
+  zone_name =  "privatelink.vaultcore.azure.net"
+}
+
+module "keyvault" {
+    source  = "../../../../modules/key_vault"
+    resource_group_name = azurerm_resource_group.oracle_resource_group.name
+    location = var.location
+    keyvault_name  = var.key_vault_name
+    shared_subnetid  = module.vnet_shared_subnet.subnet_id
+    keyvault_zone_name = module.shared_keyvault_dns_zone.dns_zone_name
+    keyvault_zone_id = module.shared_keyvault_dns_zone.dns_zone_id
+}
+
 module "oracle_vm" { 
-    providers = {azurerm = azurerm.landingzone}
     source = "../../../../modules/oracle_virtual_machine"
-    resource_group_name = azurerm_resource_group.oracle_region1.name
-    location = var.region1_loc
+    resource_group_name = azurerm_resource_group.oracle_resource_group.name
+    location = var.location
     vm_name = var.vm_name
     vm_private_ip_addr = var.vm_private_ip_addr
     vm_size = var.vm_size
-    subnet_id = data.azurerm_subnet.lz_default_subnet_region1.id
+    subnet_id = module.vnet.default_subnet_id
     vm_admin_username = var.admin_username
     enable_accelerated_networking = var.enable_accelerated_networking
     grid_password = var.grid_password
@@ -70,11 +74,10 @@ module "oracle_vm" {
 }
 
 module "data_disks"{
-    providers = {azurerm = azurerm.landingzone}
     source = "../../../../modules/managed_disk"
-    resource_group_name = azurerm_resource_group.oracle_region1.name
+    resource_group_name = azurerm_resource_group.oracle_resource_group.name
     vm_name = module.oracle_vm.vm_name
-    location = var.region1_loc
+    location = var.location
     storage_account_type = var.storage_account_type
     disk_prefix = var.data_disk_prefix
     disk_size_gb = var.data_disk_size
@@ -87,11 +90,10 @@ module "data_disks"{
 }
 
 module "redo_disks"{
-    providers = {azurerm = azurerm.landingzone}
     source = "../../../../modules/managed_disk"
-    resource_group_name = azurerm_resource_group.oracle_region1.name
+    resource_group_name = azurerm_resource_group.oracle_resource_group.name
     vm_name = module.oracle_vm.vm_name
-    location = var.region1_loc
+    location = var.location
     storage_account_type = var.storage_account_type
     disk_prefix = var.redo_disk_prefix
     disk_size_gb = var.redo_disk_size
@@ -104,11 +106,10 @@ module "redo_disks"{
 }
 
 module "asm_disks"{
-    providers = {azurerm = azurerm.landingzone}
     source = "../../../../modules/managed_disk"
-    resource_group_name = azurerm_resource_group.oracle_region1.name
+    resource_group_name = azurerm_resource_group.oracle_resource_group.name
     vm_name = module.oracle_vm.vm_name
-    location = var.region1_loc
+    location = var.location
     storage_account_type = var.storage_account_type
     disk_prefix = var.asm_disk_prefix
     disk_size_gb = var.asm_disk_size
@@ -121,35 +122,18 @@ module "asm_disks"{
 }
 
 resource "azurerm_key_vault_secret" "ora_key" {
-  provider = azurerm.identity
-  name         = "prikey-oracle-single2"
+  name         = "prikey-oracle"
   value        = module.oracle_vm.tls_private_key 
-  key_vault_id = data.azurerm_key_vault.Region1_vault.id
+  key_vault_id = module.keyvault.vault_id
 }
 
-variable "oracle_config_path" {
-  type = string
-  default = "oracle.pem"
+module "bastion_region1" {
+  source = "../../../../modules/azure_bastion"
+  resource_group_name  = azurerm_resource_group.oracle_resource_group.name
+  location = var.location
+  azurebastion_name = var.azurebastion_name
+  azurebastion_vnet_name = module.vnet.vnet_name
+  azurebastion_addr_prefix = var.bastion_addr_prefix
 }
 
-locals {
-  oracle_config = <<-EOT
-    ${module.oracle_vm.tls_private_key}
-  EOT
-}
-
-resource "local_file" "oracle_key" {
-  filename = var.oracle_config_path
-  content  = local.oracle_config
-  file_permission = "0500"
-}
-
-resource "null_resource" "ansible" {
-  provisioner "local-exec" {
-    command = "ansible-playbook -i '${var.vm_private_ip_addr}', -u '${var.admin_username}' --private-key '${var.oracle_config_path}' ansible/Configure-ASM-server.yml -e gridpass='${var.grid_password}' -e oraclepass='${var.oracle_password}' -e rootpass='${var.root_password}' -e swapsize='${var.swap_size}' -e gridurl='${var.grid_storage_url}' -e syspass='${var.ora_sys_password}' -e systempass='${var.ora_system_password}' -e monitorpass='${var.ora_monitor_password}' -e dbname='${var.oracle_database_name}'"  
-  }
-  depends_on = [
-    module.oracle_vm,module.asm_disks,module.redo_disks,module.data_disks,
-  ]
-}
 

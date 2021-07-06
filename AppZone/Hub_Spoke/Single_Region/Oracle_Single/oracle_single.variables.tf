@@ -1,36 +1,35 @@
-variable "landingzone_subscription_id" {
-    type        = string 
-    description = "Subscription Id for LandingZone subscription"
+variable "vnet_name"{
+    type =string
+    default="vnet-lz-spk-eastus2"
 }
-variable "identity_subscription_id" {
-    type        = string 
-    description = "Subscription Id for Identity subscription"
+variable "key_vault_name" {
+  type=string
+  default="kv-labiac-eastus2"
 }
-variable "corp_prefix" {
-    type        = string 
-    description = "Corp name Prefix"
+variable "location" {
+    type=string
+    default = "eastus2"
 }
-variable "id_spk_rg_prefix" {
+variable "vnet_address_space" {
     type = string
-    default =  "net-id-spk"
+    default =  "10.1.0.0/16"
 }
-
-variable "region1_loc" {
-  default = "eastus2"
-}
-
-variable "lz_vnet_name_prefix" {
-    type        = string 
-    description = "Landingzone vnet name prefix.  Appended with Region"
-    default = "vnet-lz-spk"
-}
-
-variable "lz_spk_rg_prefix" {
+variable "vnet_default_subnet" {
     type = string
-    default =  "net-lz-spk"
+    default =  "10.1.1.0/24"
+}
+variable "dns_servers" {
+    default = ["168.63.129.16"]
+}
+variable "shared_subnet_name" {
+    type = string
+    default = "shared"
 }
 
-# Dev Vm
+variable "shared_subnet_addr" {
+    type = string
+    default = "10.1.2.0/24"
+}
 variable "vm_name" {
     type        = string
     default     = "oracledev01"
@@ -43,14 +42,15 @@ variable "enable_accelerated_networking" {
 variable "vm_private_ip_addr" {
     type        = string 
     description = "Azure vm Host Address"
-    default     = "10.5.1.15"
+    default     = "10.1.1.15"
 }
-#Minumum of 8 GB of ram required.  Make sure VM supports number of disks you need to add
+#Minumum of 8 GB of ram required.  Make sure VM supports number of disks you need to hub_region1_address_space
 variable "vm_size" {
     type        = string 
     description = "Azure vm Host VM SKU"
     default     = "Standard_DS11_v2"
 }
+
 variable "asm_disk_size" {
     type        = string 
     description = "vmhost  data disk Size"
@@ -133,10 +133,17 @@ variable "storage_account_type" {
     description = "vm host storage account type"
     default     = "StandardSSD_LRS"
 }
-variable "vm_subnet_name" {
-    type        = string 
-    default = "default"
+
+variable "azurebastion_name" {
+    type        = string
+    default     = "corp-bastion-svc"
 }
+
+variable "bastion_addr_prefix" {
+    type = string
+    default = "10.1.250.0/24"
+}
+
 variable "admin_username" {
     type        = string 
     description = "Azure Admin Username"

@@ -1,6 +1,3 @@
-landingzone_subscription_id = ""
-identity_subscription_id = ""
-corp_prefix = "corp"
 grid_storage_url = "https://yoursasurl"
 grid_password = ""
 oracle_password = ""
