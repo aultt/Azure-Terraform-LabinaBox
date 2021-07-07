@@ -241,9 +241,9 @@
 
     - name: Create Ansible Temp file
       file:
-        path: /home/grid/.ansible/tmp
+        path: /home/oracle/.ansible/tmp
         state: directory
-        owner: grid
+        owner: oracle
         mode: 0755
     
     - name: Delete Grid Zip File

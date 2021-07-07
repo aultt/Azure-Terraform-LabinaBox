@@ -1,3 +1,5 @@
+location = "eastus2"
+key_vault_name = "kv-yourprefix-eastus2"
 grid_storage_url = "https://yoursasurl"
 grid_password = ""
 oracle_password = ""
