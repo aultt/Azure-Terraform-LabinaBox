@@ -239,11 +239,18 @@
         regexp: "TEMPDBNAME"
         replace: "{{ dbname }}"
 
-    - name: Create Ansible Temp file
+    - name: Create Ansible Temp file oracle
       file:
         path: /home/oracle/.ansible/tmp
         state: directory
         owner: oracle
+        mode: 0755
+    
+    - name: Create Ansible Temp file grid
+      file:
+        path: /home/grid/.ansible/tmp
+        state: directory
+        owner: grid
         mode: 0755
     
     - name: Delete Grid Zip File
