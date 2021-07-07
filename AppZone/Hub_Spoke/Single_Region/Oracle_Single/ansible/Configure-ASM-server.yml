@@ -1,5 +1,4 @@
 - name: Configure Server
-  #hosts: all
   hosts: localhost
   become: yes
 
@@ -175,22 +174,6 @@
         name: waagent
         state: restarted
 
-    #- name: Copy Grid Response File to Server
-    #  ansible.builtin.copy:
-    #    src: ../files/gridsetup.rsp
-    #    dest: /opt/grid
-    #    owner: grid
-    #    group: oinstall
-    #    mode: 0700
-#
-    #- name: Copy DB Response File to Server
-    #  ansible.builtin.copy:
-    #    src: ../files/dbca19.rsp
-    #    dest: /home/oracle
-    #    owner: oracle
-    #    group: oinstall
-    #    mode: 0700
-
     - name: Copy Grid Response File
       ansible.builtin.copy:
         remote_src: yes
@@ -205,7 +188,7 @@
         remote_src: yes
         src: /var/lib/waagent/custom-script/download/0/dbca19.rsp
         dest: /home/oracle
-        owner: grid
+        owner: oracle
         group: oinstall
         mode: 0700
 
