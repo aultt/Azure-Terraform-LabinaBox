@@ -19,7 +19,7 @@ resource "azurerm_key_vault" "vault" {
     bypass         = "AzureServices"
     default_action = "Deny"
     ip_rules = [
-      "${chomp(data.http.myip.body)}/32"
+      "${chomp(data.http.myip.response_body)}/32"
   ]
  
   }
@@ -27,70 +27,13 @@ resource "azurerm_key_vault" "vault" {
     tenant_id = data.azurerm_client_config.current.tenant_id
     object_id = data.azurerm_client_config.current.object_id
 
-    certificate_permissions = [
-      "backup",
-      "create",
-      "delete",
-      "deleteissuers",
-      "get",
-      "getissuers",
-      "import",
-      "list",
-      "listissuers",
-      "managecontacts",
-      "manageissuers",
-      "purge",
-      "recover",
-      "restore",
-      "setissuers",
-      "update"
-    ]
+    certificate_permissions = ["Backup", "Create", "Delete", "Get"]
 
-    key_permissions = [
-      "list",
-      "encrypt",
-      "decrypt",
-      "wrapKey",
-      "unwrapKey",
-      "sign",
-      "verify",
-      "get",
-      "create",
-      "update",
-      "import",
-      "backup",
-      "restore",
-      "recover",
-      "delete",
-      "purge"
-    ]
+    key_permissions = ["List", "Encrypt", "Decrypt", "WrapKey", "UnwrapKey", "Sign", "Verify", "Get","Create", "Update"]
 
-    secret_permissions = [
-      "list",
-      "get",
-      "set",
-      "backup",
-      "restore",
-      "recover",
-      "purge",
-      "delete"
-    ]
+    secret_permissions = ["List", "Get", "Set", "Backup", "Restore", "Recover", "Purge", "Delete"]
 
-    storage_permissions = [
-      "backup",
-      "delete",
-      "deletesas",
-      "get",
-      "getsas",
-      "listsas",
-      "purge",
-      "recover",
-      "regeneratekey",
-      "restore",
-      "set",
-      "setsas",
-      "update"
-    ]
+    storage_permissions = ["Backup", "Get", "Recover", "List"]
   }
 
 }

@@ -1,17 +1,17 @@
-# Azure provider version 
-
 terraform {
   required_providers {
     azurerm = {
       source = "hashicorp/azurerm"
-      version = ">= 2.52"
+      version = ">= 3.0.0"
+      configuration_aliases = [ azurerm.poc ]
     }
   }
 }
 provider "azurerm" {
+    resource_provider_registrations = "none"
+    subscription_id = var.poc_subscription_id
     features {} 
-}
-
+} 
 provider "azurerm" {
     features {} 
     alias = "poc"
@@ -24,7 +24,7 @@ locals{
   dns_servers = var.hybrid_deployment ? [var.domain_ip,var.dc1_private_ip_addr,"168.63.129.16"] : ["168.63.129.16"]
 }
 resource "azurerm_resource_group" "svc_rg" {
-    provider = azurerm.poc
+    provider = azurerm .poc
     name     = "${var.svc_rg_prefix}-${var.region1_loc}-rg"
     location                    = var.region1_loc
   tags = {
@@ -35,7 +35,6 @@ resource "azurerm_resource_group" "svc_rg" {
 }
 
 module "log_analytics" {
-  providers = {azurerm = azurerm.poc}
   source                          = "../../../../modules//log_analytics"
   resource_group_name             = azurerm_resource_group.svc_rg.name
   location                        = var.region1_loc
@@ -44,8 +43,10 @@ module "log_analytics" {
 
 #AutomationAccount must be in a supported region for linking 
 #https://docs.microsoft.com/en-us/azure/automation/how-to/region-mappings
+
 module "automation_account" {
-  providers = {azurerm = azurerm.poc}
+  providers = { azurerm = azurerm
+    azurerm.poc = azurerm.poc }
   source                          = "../../../../modules//automation_account"
   resource_group_name             = azurerm_resource_group.svc_rg.name
   automation_location             = var.automation_loc
@@ -53,6 +54,7 @@ module "automation_account" {
   name                            = "auto-core-${var.region1_loc}-${var.corp_prefix}"
   law_id                          = module.log_analytics.log_analytics_id
   law_name                        = module.log_analytics.log_analytics_name
+  depends_on = [ module.log_analytics ]
 }
 
 resource "azurerm_resource_group" "hub_region1" {
@@ -80,7 +82,8 @@ resource "azurerm_route_table" "Hub-Region1" {
 }
 
 module "hub_region1" {
-  providers = {azurerm = azurerm.poc}
+  providers = { azurerm = azurerm
+    azurerm.poc = azurerm.poc }
   source = "../../../../modules/networking/vnet"
   resource_group_name = azurerm_resource_group.hub_region1.name
   location            = azurerm_resource_group.hub_region1.location
@@ -89,9 +92,12 @@ module "hub_region1" {
   default_subnet_prefixes = [var.hub_region1_default_subnet]
   dns_servers = local.dns_servers
   route_table_id = azurerm_route_table.Hub-Region1.id
+  depends_on = [ azurerm_resource_group.hub_region1 ]
 }
+
 module "hub_region1_jumphost_subnet"{
-  providers = {azurerm = azurerm.poc}
+  providers = { azurerm = azurerm
+    azurerm.poc = azurerm.poc }
   source = "../../../../modules/networking/subnet"
   resource_group_name = azurerm_resource_group.hub_region1.name
   vnet_name = module.hub_region1.vnet_name
@@ -133,7 +139,8 @@ resource "azurerm_route_table" "Identity-Region1" {
 
 # Create idenity spoke for region1
 module "id_spk_region1" {
-  providers = {azurerm = azurerm.poc}
+  providers = { azurerm = azurerm
+    azurerm.poc = azurerm.poc }
   source = "../../../../modules/networking/vnet"
   resource_group_name = azurerm_resource_group.id_spk_region1.name
   location            = azurerm_resource_group.id_spk_region1.location
@@ -144,9 +151,9 @@ module "id_spk_region1" {
   route_table_id = azurerm_route_table.Identity-Region1.id
 }
 
-
 module "onprem_VPN_Region1"{
-  providers = {azurerm = azurerm.poc}
+  providers = { azurerm = azurerm
+    azurerm.poc = azurerm.poc }
   source = "../../../../modules/vpn"
   count = var.hybrid_deployment ? 1 : 0
   resource_group_name =azurerm_resource_group.hub_region1.name
@@ -165,7 +172,8 @@ module "onprem_VPN_Region1"{
 }
 
 module "id_spk_region1_shared_subnet"{
-  providers = {azurerm = azurerm.poc}
+  providers = { azurerm = azurerm
+    azurerm.poc = azurerm.poc }
   source = "../../../../modules//networking/subnet"
   resource_group_name = azurerm_resource_group.id_spk_region1.name
   vnet_name = module.id_spk_region1.vnet_name
@@ -181,21 +189,24 @@ resource "azurerm_subnet_route_table_association" "default_Region1" {
 }
 
 module "idk_shared_keyvault_dns_zone"{
-  providers = {azurerm = azurerm.poc}
+  providers = { azurerm = azurerm
+    azurerm.poc = azurerm.poc }
   source = "../../../../modules//private_dns/zone"
   resource_group_name = azurerm_resource_group.hub_region1.name
   zone_name =  "privatelink.vaultcore.azure.net"
 }
 
 module "idk_shared_websites_dns_zone"{
-  providers = {azurerm = azurerm.poc}
+  providers = { azurerm = azurerm
+    azurerm.poc = azurerm.poc }
   source = "../../../../modules/private_dns/zone"
   resource_group_name = azurerm_resource_group.hub_region1.name
   zone_name =  "privatelink.azurewebsites.azure.net"
 }
 
 module "keyvault_region1" {
-    providers = {azurerm = azurerm.poc}
+    providers = { azurerm = azurerm
+      azurerm.poc = azurerm.poc }
     source  = "../../../../modules/key_vault"
     resource_group_name = azurerm_resource_group.id_spk_region1.name
     location = azurerm_resource_group.id_spk_region1.location
@@ -210,6 +221,7 @@ resource "azurerm_key_vault_secret" "local_admin_username_Region1" {
   name = "local-admin-username"
   value = var.jump_host_admin_username
   key_vault_id = module.keyvault_region1.vault_id
+  depends_on = [module.idk_shared_keyvault_dns_zone_link_region1]
 }
 
 resource "azurerm_key_vault_secret" "local_admin_password_Region1" {
@@ -217,6 +229,7 @@ resource "azurerm_key_vault_secret" "local_admin_password_Region1" {
   name = "local-admin-password"
   value = var.jump_host_password
   key_vault_id = module.keyvault_region1.vault_id
+  depends_on = [module.idk_shared_keyvault_dns_zone_link_region1]
 }
 
 resource "azurerm_key_vault_secret" "domain_admin_password_Region1" {
@@ -224,10 +237,12 @@ resource "azurerm_key_vault_secret" "domain_admin_password_Region1" {
   name = "domain-admin-password"
   value = var.domain_admin_password
   key_vault_id = module.keyvault_region1.vault_id
+  depends_on = [module.idk_shared_keyvault_dns_zone_link_region1]
 }
 
 module "DSC_config" {
-  providers = {azurerm = azurerm.poc}
+  providers = { azurerm = azurerm
+    azurerm.poc = azurerm.poc }
   source = "../../../../modules/dsc_configuration/"
   domain_name        = var.domain_name
   domain_user        = "${var.domain_NetbiosName}\\${var.domain_admin_username}"
@@ -258,9 +273,9 @@ resource "null_resource" "PowerShellCompileDSC"{
   depends_on = [module.DSC_config]
 }
 
-
 module "id_spk_region1_infra_subnet_Region1"{
-  providers = {azurerm = azurerm.poc}
+  providers = { azurerm = azurerm
+    azurerm.poc = azurerm.poc }
   source = "../../../../modules/networking/subnet"
   resource_group_name = azurerm_resource_group.id_spk_region1.name
   vnet_name = module.id_spk_region1.vnet_name
@@ -277,7 +292,8 @@ resource "azurerm_subnet_route_table_association" "infra_Region1" {
 
 # Peering between hub1 and spk1
 module "peering_id_spk_Region1_1" {
-  providers = {azurerm = azurerm.poc}
+  providers = { azurerm = azurerm
+    azurerm.poc = azurerm.poc }
   source = "../../../../modules/networking/peering_direction1"
   resource_group_nameA = azurerm_resource_group.hub_region1.name
   resource_group_nameB = azurerm_resource_group.id_spk_region1.name
@@ -290,7 +306,8 @@ module "peering_id_spk_Region1_1" {
 
 # Peering between hub1 and spk1
 module "peering_id_spk_Region1_2" {
-  providers = {azurerm = azurerm.poc}
+  providers = { azurerm = azurerm
+    azurerm.poc = azurerm.poc }
   source = "../../../../modules//networking/peering_direction2"
   resource_group_nameA = azurerm_resource_group.hub_region1.name
   resource_group_nameB = azurerm_resource_group.id_spk_region1.name
@@ -302,7 +319,8 @@ module "peering_id_spk_Region1_2" {
 }
 
 module "idk_shared_keyvault_dns_zone_link_region1" {
-  providers = {azurerm = azurerm.poc}
+  providers = { azurerm = azurerm
+    azurerm.poc = azurerm.poc }
   source = "../../../../modules//private_dns/link"
   resource_group_name = azurerm_resource_group.hub_region1.name
   service_name = "keyvault"
@@ -310,10 +328,12 @@ module "idk_shared_keyvault_dns_zone_link_region1" {
   spoke_vnet_id = module.id_spk_region1.vnet_id
   dns_zone_name = "privatelink.vaultcore.azure.net"
   location = var.region1_loc
+  depends_on = [module.idk_shared_keyvault_dns_zone]
 }
 
 module "idk_shared_websites_dns_zone_link_region1" {
-  providers = {azurerm = azurerm.poc}
+  providers = { azurerm = azurerm
+    azurerm.poc = azurerm.poc }
   source = "../../../../modules/private_dns/link"
   resource_group_name = azurerm_resource_group.hub_region1.name
   service_name = "ase"
@@ -321,6 +341,7 @@ module "idk_shared_websites_dns_zone_link_region1" {
   spoke_vnet_id = module.id_spk_region1.vnet_id
   dns_zone_name = "privatelink.azurewebsites.azure.net"
   location = var.region1_loc
+  depends_on = [module.idk_shared_websites_dns_zone]
 }
 
 resource "azurerm_resource_group" "lz_spk_region1" {
@@ -335,7 +356,8 @@ resource "azurerm_resource_group" "lz_spk_region1" {
 }
 
 module "lz_spk_region1" {
-  providers = {azurerm = azurerm.poc}
+  providers = { azurerm = azurerm
+    azurerm.poc = azurerm.poc }
   source = "../../../../modules//networking/vnet"
   resource_group_name = azurerm_resource_group.lz_spk_region1.name
   location            = azurerm_resource_group.lz_spk_region1.location
@@ -348,7 +370,8 @@ module "lz_spk_region1" {
 
 # Peering between hub1 and landingzone1
 module "peering_lz_spk_Region1_1" {
-  providers = {azurerm = azurerm.poc}
+  providers = { azurerm = azurerm
+    azurerm.poc = azurerm.poc }
   source = "../../../../modules//networking/peering_direction1"
   resource_group_nameA = azurerm_resource_group.hub_region1.name
   resource_group_nameB = azurerm_resource_group.lz_spk_region1.name
@@ -361,7 +384,8 @@ module "peering_lz_spk_Region1_1" {
 
 # Peering between hub1 and landingzone1
 module "peering_id_lz_Region1_2" {
-  providers = {azurerm = azurerm.poc}
+  providers = { azurerm = azurerm
+    azurerm.poc = azurerm.poc }
   source = "../../../../modules//networking/peering_direction2"
   resource_group_nameA = azurerm_resource_group.hub_region1.name
   resource_group_nameB = azurerm_resource_group.lz_spk_region1.name
@@ -386,7 +410,8 @@ resource "azurerm_resource_group" "sb_spk_region1" {
 
 # Create Sandbox for region1
 module "sb_spk_region1" {
-  providers = {azurerm = azurerm.poc}
+  providers = { azurerm = azurerm
+    azurerm.poc = azurerm.poc }
   source = "../../../../modules//networking/vnet"
   resource_group_name = azurerm_resource_group.sb_spk_region1.name
   location            = azurerm_resource_group.sb_spk_region1.location
@@ -399,7 +424,8 @@ module "sb_spk_region1" {
 
 # Peering between hub1 and landingzone1
 module "peering_sb_spk_Region1_1" {
-  providers = {azurerm = azurerm.poc}
+  providers = { azurerm = azurerm
+    azurerm.poc = azurerm.poc }
   source = "../../../../modules//networking/peering_direction1"
   resource_group_nameA = azurerm_resource_group.hub_region1.name
   resource_group_nameB = azurerm_resource_group.sb_spk_region1.name
@@ -412,7 +438,8 @@ module "peering_sb_spk_Region1_1" {
 
 # Peering between hub1 and landingzone1
 module "peering_sb_spk_Region1_2" {
-  providers = {azurerm = azurerm.poc}
+  providers = { azurerm = azurerm
+    azurerm.poc = azurerm.poc }
   source = "../../../../modules//networking/peering_direction2"
   resource_group_nameA = azurerm_resource_group.hub_region1.name
   resource_group_nameB = azurerm_resource_group.sb_spk_region1.name
@@ -426,14 +453,16 @@ module "peering_sb_spk_Region1_2" {
 
 #Add Storage Private Zone and Link to all vnets
 module "idk_shared_storage_dns_zone"{
-  providers = {azurerm = azurerm.poc}
+  providers = { azurerm = azurerm
+    azurerm.poc = azurerm.poc }
   source = "../../../../modules/private_dns/zone"
   resource_group_name = azurerm_resource_group.hub_region1.name
   zone_name =  "privatelink.blob.core.windows.net"
 }
 
 module "idk_shared_storage_dns_zone_link_region1" {
-  providers = {azurerm = azurerm.poc}
+  providers = { azurerm = azurerm
+    azurerm.poc = azurerm.poc }
   source = "../../../../modules/private_dns/link"
   resource_group_name = azurerm_resource_group.hub_region1.name
   service_name = "storage"
@@ -444,7 +473,8 @@ module "idk_shared_storage_dns_zone_link_region1" {
 }
 
 module "lz_storage_dns_zone_link_region1"{
-  providers = {azurerm = azurerm.poc}
+  providers = { azurerm = azurerm
+    azurerm.poc = azurerm.poc }
   source = "../../../../modules/private_dns/link_individual_spk"
   resource_group_name = azurerm_resource_group.hub_region1.name
   service_name = "storage"
@@ -456,7 +486,8 @@ module "lz_storage_dns_zone_link_region1"{
 }
 
 module "sb_storage_dns_zone_link_region1"{
-  providers = {azurerm = azurerm.poc}
+  providers = { azurerm = azurerm
+    azurerm.poc = azurerm.poc }
   source = "../../../../modules/private_dns/link_individual_spk"
   resource_group_name = azurerm_resource_group.hub_region1.name
   service_name = "storage"
@@ -470,14 +501,16 @@ module "sb_storage_dns_zone_link_region1"{
 #SQL Private DNS Zone
 #Add Storage Private Zone and Link to all vnets
 module "idk_shared_sql_dns_zone"{
-  providers = {azurerm = azurerm.poc}
+  providers = { azurerm = azurerm
+    azurerm.poc = azurerm.poc }
   source = "../../../../modules/private_dns/zone"
   resource_group_name = azurerm_resource_group.hub_region1.name
   zone_name =  "privatelink.database.windows.net"
 }
 
 module "idk_shared_sql_dns_zone_link_region1" {
-  providers = {azurerm = azurerm.poc}
+  providers = { azurerm = azurerm
+    azurerm.poc = azurerm.poc }
   source = "../../../../modules/private_dns/link"
   resource_group_name = azurerm_resource_group.hub_region1.name
   service_name = "sql"
@@ -488,7 +521,8 @@ module "idk_shared_sql_dns_zone_link_region1" {
 }
 
 module "lz_sql_dns_zone_link_region1"{
-  providers = {azurerm = azurerm.poc}
+  providers = { azurerm = azurerm
+    azurerm.poc = azurerm.poc }
   source = "../../../../modules/private_dns/link_individual_spk"
   resource_group_name = azurerm_resource_group.hub_region1.name
   service_name = "sql"
@@ -500,7 +534,8 @@ module "lz_sql_dns_zone_link_region1"{
 }
 
 module "sb_sql_dns_zone_link_region1"{
-  providers = {azurerm = azurerm.poc}
+  providers = { azurerm = azurerm
+    azurerm.poc = azurerm.poc }
   source = "../../../../modules/private_dns/link_individual_spk"
   resource_group_name = azurerm_resource_group.hub_region1.name
   service_name = "sql"
@@ -548,7 +583,8 @@ resource "azurerm_route_table" "SandBox-Region1" {
 }
 # Bastion Host
 module "bastion_region1" {
-  providers = {azurerm = azurerm.poc}
+  providers = { azurerm = azurerm
+    azurerm.poc = azurerm.poc }
   source = "../../../../modules/azure_bastion"
   resource_group_name  = azurerm_resource_group.hub_region1.name
   location = var.region1_loc
