@@ -18,7 +18,7 @@ resource "azurerm_public_ip" "pip" {
   location            = var.location
   resource_group_name = var.resource_group_name
 
-  allocation_method = "Dynamic"
+  allocation_method = "Static"
 }
 
 resource "azurerm_virtual_network_gateway" "gateway" {
@@ -31,7 +31,7 @@ resource "azurerm_virtual_network_gateway" "gateway" {
 
   active_active = false
   enable_bgp    = false
-  sku           = "Basic"
+  sku           = "VpnGw1"
 
   ip_configuration {
     name                          = "vnetGatewayConfig"

@@ -8,7 +8,11 @@ variable "hybrid_deployment" {
     description = "Is this a Hybrid Deployment or Cloud Only"
     default = false
 }
-
+variable "deploy_DC" {
+    type = bool
+    description = "Is this a Hybrid Deployment or Cloud Only"
+    default = false
+}
 variable "gateway_ip_address" {
     type = string
     description = "Local Network Gateway Address"

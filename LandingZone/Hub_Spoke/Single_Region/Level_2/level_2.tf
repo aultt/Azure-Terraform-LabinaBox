@@ -21,7 +21,7 @@ variable "dns_servers" {
   default =["168.63.129.16"]
 }
 locals{
-  dns_servers = var.hybrid_deployment ? [var.domain_ip,var.dc1_private_ip_addr,"168.63.129.16"] : ["168.63.129.16"]
+  dns_servers = var.deploy_DC ? [var.domain_ip,var.dc1_private_ip_addr,"168.63.129.16"] : ["168.63.129.16"]
 }
 resource "azurerm_resource_group" "svc_rg" {
     provider = azurerm .poc
@@ -364,7 +364,7 @@ module "lz_spk_region1" {
   vnet_name             = "${var.lz_vnet_name_prefix}-${var.region1_loc}"
   address_space         = var.lz_address_space_region1
   default_subnet_prefixes = [var.lz_dsubnet_address_space_region1]
-  dns_servers = var.hybrid_deployment ? [var.dc1_private_ip_addr, "168.63.129.16"] :["168.63.129.16"]
+  dns_servers = var.deploy_DC ? [var.dc1_private_ip_addr, "168.63.129.16"] :["168.63.129.16"]
   route_table_id = azurerm_route_table.LandingZone-Region1.id
 }
 
@@ -380,6 +380,8 @@ module "peering_lz_spk_Region1_1" {
   netB_name            = module.lz_spk_region1.vnet_name
   netB_id              = module.lz_spk_region1.vnet_id
   gateway_transit = var.hybrid_deployment ? true : false
+  depends_on = [module.onprem_VPN_Region1]
+
 }
 
 # Peering between hub1 and landingzone1
@@ -394,7 +396,8 @@ module "peering_id_lz_Region1_2" {
   netB_name            = module.lz_spk_region1.vnet_name
   netB_id              = module.lz_spk_region1.vnet_id
   remote_gateways      = var.hybrid_deployment ? true : false
-  depends_on = [module.peering_lz_spk_Region1_1]
+  depends_on = [module.peering_lz_spk_Region1_1, module.onprem_VPN_Region1]
+
 }
 
 resource "azurerm_resource_group" "sb_spk_region1" {

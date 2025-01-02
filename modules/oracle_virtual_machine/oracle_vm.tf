@@ -4,8 +4,8 @@ resource "azurerm_network_interface" "vm" {
     name                 = "${var.vm_name}-nic"
     location             = var.location
     resource_group_name  = var.resource_group_name
-    enable_ip_forwarding = var.nic_forwarding
-    enable_accelerated_networking = var.enable_accelerated_networking
+    ip_forwarding_enabled           = var.nic_forwarding
+    accelerated_networking_enabled  = var.enable_accelerated_networking
     ip_configuration { 
         name                          = "configuration"
         subnet_id                     = var.subnet_id 
