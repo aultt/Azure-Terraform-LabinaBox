@@ -20,6 +20,8 @@ resource "azurerm_virtual_machine" "vm" {
   name                  = var.vm_name
   location              = var.location
   resource_group_name   = var.resource_group_name
+  delete_data_disks_on_termination = true
+  delete_os_disk_on_termination = true
   network_interface_ids = [
         azurerm_network_interface.vm.id
     ]

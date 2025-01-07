@@ -2,7 +2,15 @@ variable "region1_loc" {
   type = string
   default = "eastus2"
 }
+variable "key_vault_name" {
+  type=string
+  default="kv-TAMZ-eastus2"
+}
 
+variable "keyvault_resource_group" {
+    type = string
+    default = "net-id-spk-eastus2-rg"
+}
 variable "region1_name" {
   default = "hub1"
 }
@@ -23,7 +31,7 @@ variable "hybrid_deployment" {
 variable "deploy_domain" {
     type = bool
     description = "Deploy domain controller?"
-    default = false
+    default = true
 }
 
 variable "poc_subscription_id" {
@@ -141,10 +149,10 @@ variable "local_admin_username" {
     description = "Azure Admin Username"
     default = "azureadmin"
 }
-variable "local_admin_password" {
-    sensitive   = true
-    type        = string 
-}
+#variable "local_admin_password" {
+#    sensitive   = true
+#    type        = string 
+#}
 variable "svc_rg_prefix" {
     type        = string 
     description = "Shared Services Resource Group"

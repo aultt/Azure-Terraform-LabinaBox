@@ -26,26 +26,6 @@ variable "lz_vnet_name" {
     type = string
     default = "vnet-lz-spk-eastus2"
 }
-#variable "vnet_address_space" {
-#    type = string
-#    default =  "10.1.0.0/16"
-#}
-#variable "vnet_default_subnet" {
-#    type = string
-#    default =  "10.1.1.0/24"
-#}
-#variable "dns_servers" {
-#    default = ["168.63.129.16"]
-#}
-#variable "shared_subnet_name" {
-#    type = string
-#    default = "shared"
-#}
-#
-#variable "shared_subnet_addr" {
-#    type = string
-#    default = "10.1.2.0/24"
-#}
 variable "vm_name" {
     type        = string
     default     = "oracledev01"
@@ -173,39 +153,13 @@ variable "tags" {
     owner = "Oracle Database Workload"
   }
 }
-#variable "grid_storage_url" {
-#    type = string
-#    description= "URL with SAS token to Grid zip file"
-#}
+
 variable "swap_size" {
     type = string
     description = "Size in MB to set Swapsize to"
     default = "13435"
 }
-#variable "grid_password" {
-#    type = string
-#    description = "Grid user will have password set to this value"
-#}
-#variable "oracle_password" {
-#    type = string
-#    description = "Grid user will have password set to this value"
-#}
-#variable "root_password" {
-#    type = string
-#    description = "Grid user will have password set to this value"
-#}
-#variable "ora_sys_password" {
-#    type = string
-#    description = "Oracle Sys user will have password set to this value"
-#}
-#variable "ora_system_password" {
-#    type = string
-#    description = "Oracle System user will have password set to this value"
-#}
-#variable "ora_monitor_password" {
-#    type = string
-#    description = "Oracle System user will have password set to this value"
-#}
+
 variable "oracle_database_name" {
   type = string
   description = "Oracle database name which will be created"
