@@ -182,34 +182,34 @@ variable "id_spk_region1_shared_subnet_addr" {
     default = "10.3.2.0/24"
 }
 
-variable "bastion_addr_prefix" {
-    type = string
-    default = "10.1.250.0/24"
-}
-variable "dc1_private_ip_addr" {
-    type        = string 
-    description = "DC1 Private IP Address"
-    default     = "10.3.3.5"
-}
-variable "dc2_private_ip_addr" {
-    type        = string 
-    description = "DC2 Private IP Address"
-    default     = "10.4.3.5"
-}
-variable "dns_nva2_private_ip_addr" {
-    type        = string 
-    description = "DC2 Private IP Address"
-    default     = "10.2.1.5"
-}
-variable "dns2_vm_name" {
-    type        = string
-    default     = "awdnsnva1"
-}
-variable "dns_nva1_private_ip_addr" {
-    type        = string 
-    description = "DC1 Private IP Address"
-    default     = "10.1.1.5"
-}
+#variable "bastion_addr_prefix" {
+#    type = string
+#    default = "10.1.250.0/24"
+#}
+#variable "dc1_private_ip_addr" {
+#    type        = string 
+#    description = "DC1 Private IP Address"
+#    default     = "10.3.3.5"
+#}
+#variable "dc2_private_ip_addr" {
+#    type        = string 
+#    description = "DC2 Private IP Address"
+#    default     = "10.4.3.5"
+#}
+#variable "dns_nva2_private_ip_addr" {
+#    type        = string 
+#    description = "DC2 Private IP Address"
+#    default     = "10.2.1.5"
+#}
+#variable "dns2_vm_name" {
+#    type        = string
+#    default     = "awdnsnva1"
+#}
+#variable "dns_nva1_private_ip_addr" {
+#    type        = string 
+#    description = "DC1 Private IP Address"
+#    default     = "10.1.1.5"
+#}
 
 variable "route_table_prefix" {
   type = string
@@ -225,10 +225,10 @@ variable "id_spk_region1_infra_subnet_addr" {
     default = "10.3.3.0/24"
 }
 # Azure Bastion module
-variable "azurebastion_name" {
-    type        = string
-    default     = "corp-bastion-svc"
-}
+#variable "azurebastion_name" {
+#    type        = string
+#    default     = "corp-bastion-svc"
+#}
 variable "sb_spk_rg_prefix" {
     type = string
     default =  "net-sb-spk"
@@ -243,16 +243,16 @@ variable "sb_dsubnet_address_space_region1" {
     description = "LandingZone Address Space"
     default = "10.7.1.0/24"
 }
-variable "sb_address_space_region2" {
-    type        = string 
-    description = "LandingZone Address Space"
-    default = "10.8.0.0/16"
-}
-variable "sb_dsubnet_address_space_region2" {
-    type        = string 
-    description = "LandingZone Address Space"
-    default = "10.8.1.0/24"
-}
+#variable "sb_address_space_region2" {
+#    type        = string 
+#    description = "LandingZone Address Space"
+#    default = "10.8.0.0/16"
+#}
+#variable "sb_dsubnet_address_space_region2" {
+#    type        = string 
+#    description = "LandingZone Address Space"
+#    default = "10.8.1.0/24"
+#}
 variable "sb_vnet_name_prefix" {
     type        = string 
     description = "Landingzone vnet name prefix.  Appended with Region"

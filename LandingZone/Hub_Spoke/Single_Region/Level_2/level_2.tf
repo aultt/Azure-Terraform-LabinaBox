@@ -20,9 +20,13 @@ provider "azurerm" {
 variable "dns_servers" {
   default =["168.63.129.16"]
 }
+#locals{
+#  dns_servers = var.deploy_DC ? [var.domain_ip,var.dc1_private_ip_addr,"168.63.129.16"] : ["168.63.129.16"]
+#}
 locals{
-  dns_servers = var.deploy_DC ? [var.domain_ip,var.dc1_private_ip_addr,"168.63.129.16"] : ["168.63.129.16"]
+  dns_servers = ["168.63.129.16"]
 }
+
 resource "azurerm_resource_group" "svc_rg" {
     provider = azurerm .poc
     name     = "${var.svc_rg_prefix}-${var.region1_loc}-rg"
@@ -72,8 +76,9 @@ resource "azurerm_route_table" "Hub-Region1" {
   route {
     name           = "Route-${var.hub_vnet_name_prefix}-${var.region1_loc}-HubNva"
     address_prefix = var.route_table_prefix
-    next_hop_in_ip_address = "0.0.0.0"
-    next_hop_type  = "VirtualAppliance"
+    next_hop_type  = "VirtualNetworkGateway"
+    #next_hop_in_ip_address = "0.0.0.0"
+    #next_hop_type  = "VirtualAppliance"
   }
 
   tags = {
@@ -128,8 +133,9 @@ resource "azurerm_route_table" "Identity-Region1" {
   route {
     name           = "Route-${var.id_spk_rg_prefix}-${var.region1_loc}-HubNva"
     address_prefix = var.route_table_prefix
-    next_hop_in_ip_address = var.dns_nva1_private_ip_addr
-    next_hop_type  = "VirtualAppliance"
+    next_hop_type  = "VnetLocal"
+    #next_hop_in_ip_address = var.dns_nva1_private_ip_addr
+    #next_hop_type  = "VirtualAppliance"
   }
 
   tags = {
@@ -240,38 +246,38 @@ resource "azurerm_key_vault_secret" "domain_admin_password_Region1" {
   depends_on = [module.idk_shared_keyvault_dns_zone_link_region1]
 }
 
-module "DSC_config" {
-  providers = { azurerm = azurerm
-    azurerm.poc = azurerm.poc }
-  source = "../../../../modules/dsc_configuration/"
-  domain_name        = var.domain_name
-  domain_user        = "${var.domain_NetbiosName}\\${var.domain_admin_username}"
-  admin_password     = var.jump_host_admin_username
-  admin_username     = var.jump_host_password
-  domain_NetbiosName = var.domain_NetbiosName
-  domain_login        =  "${var.domain_admin_username}@${var.domain_name}"   
-  domain_admin_password = var.domain_admin_password 
-  domain_ip = var.domain_ip           
-  automation_account_name = module.automation_account.name
-  resource_group_name = module.automation_account.resource_group_name
-  location = var.automation_loc
-  dns1_name = var.dns1_vm_name
-  dns2_name = var.dns2_vm_name
-  jump_host_name = var.jump_host_name
-  dc1_private_ip_addr = var.dc1_private_ip_addr
-  dc2_private_ip_addr = var.dc2_private_ip_addr
-}
+#module "DSC_config" {
+#  providers = { azurerm = azurerm
+#    azurerm.poc = azurerm.poc }
+#  source = "../../../../modules/dsc_configuration/"
+#  domain_name        = var.domain_name
+#  domain_user        = "${var.domain_NetbiosName}\\${var.domain_admin_username}"
+#  admin_password     = var.jump_host_admin_username
+#  admin_username     = var.jump_host_password
+#  domain_NetbiosName = var.domain_NetbiosName
+#  domain_login        =  "${var.domain_admin_username}@${var.domain_name}"   
+#  domain_admin_password = var.domain_admin_password 
+#  domain_ip = var.domain_ip           
+#  automation_account_name = module.automation_account.name
+#  resource_group_name = module.automation_account.resource_group_name
+#  location = var.automation_loc
+#  dns1_name = var.dns1_vm_name
+#  dns2_name = var.dns2_vm_name
+#  jump_host_name = var.jump_host_name
+#  dc1_private_ip_addr = var.dc1_private_ip_addr
+#  dc2_private_ip_addr = var.dc2_private_ip_addr
+#}
 
-resource "null_resource" "PowerShellCompileDSC"{
-    triggers = {
-      trigger = "{uuid()}"
-    }
-    provisioner "local-exec" {
-        command = ".'${path.module}/PowerShell/compileDSCConfigurationwithParam.ps1' -subscriptionId ${var.poc_subscription_id} -resourceGroupName ${azurerm_resource_group.svc_rg.name} -automationAccountName ${module.automation_account.name}"
-        interpreter = ["pwsh","-Command"]    
-  }
-  depends_on = [module.DSC_config]
-}
+#resource "null_resource" "PowerShellCompileDSC"{
+#    triggers = {
+#      trigger = "{uuid()}"
+#    }
+#    provisioner "local-exec" {
+#        command = ".'${path.module}/PowerShell/compileDSCConfigurationwithParam.ps1' -subscriptionId ${var.poc_subscription_id} -resourceGroupName ${azurerm_resource_group.svc_rg.name} -automationAccountName ${module.automation_account.name}"
+#        interpreter = ["pwsh","-Command"]    
+#  }
+#  depends_on = [module.DSC_config]
+#}
 
 module "id_spk_region1_infra_subnet_Region1"{
   providers = { azurerm = azurerm
@@ -302,6 +308,7 @@ module "peering_id_spk_Region1_1" {
   netB_name            = module.id_spk_region1.vnet_name
   netB_id              = module.id_spk_region1.vnet_id
   gateway_transit = var.hybrid_deployment ? true : false
+  depends_on = [ module.onprem_VPN_Region1 ]
 }
 
 # Peering between hub1 and spk1
@@ -316,6 +323,7 @@ module "peering_id_spk_Region1_2" {
   netB_name            = module.id_spk_region1.vnet_name
   netB_id              = module.id_spk_region1.vnet_id
   remote_gateways      = var.hybrid_deployment ? true : false
+  depends_on = [ module.onprem_VPN_Region1 ]
 }
 
 module "idk_shared_keyvault_dns_zone_link_region1" {
@@ -364,7 +372,8 @@ module "lz_spk_region1" {
   vnet_name             = "${var.lz_vnet_name_prefix}-${var.region1_loc}"
   address_space         = var.lz_address_space_region1
   default_subnet_prefixes = [var.lz_dsubnet_address_space_region1]
-  dns_servers = var.deploy_DC ? [var.dc1_private_ip_addr, "168.63.129.16"] :["168.63.129.16"]
+  #dns_servers = var.deploy_DC ? [var.dc1_private_ip_addr, "168.63.129.16"] :["168.63.129.16"]
+  dns_servers = ["168.63.129.16"]
   route_table_id = azurerm_route_table.LandingZone-Region1.id
 }
 
@@ -381,7 +390,6 @@ module "peering_lz_spk_Region1_1" {
   netB_id              = module.lz_spk_region1.vnet_id
   gateway_transit = var.hybrid_deployment ? true : false
   depends_on = [module.onprem_VPN_Region1]
-
 }
 
 # Peering between hub1 and landingzone1
@@ -397,7 +405,7 @@ module "peering_id_lz_Region1_2" {
   netB_id              = module.lz_spk_region1.vnet_id
   remote_gateways      = var.hybrid_deployment ? true : false
   depends_on = [module.peering_lz_spk_Region1_1, module.onprem_VPN_Region1]
-
+  
 }
 
 resource "azurerm_resource_group" "sb_spk_region1" {
@@ -421,7 +429,8 @@ module "sb_spk_region1" {
   vnet_name             = "${var.sb_vnet_name_prefix}-${var.region1_loc}"
   address_space         = var.sb_address_space_region1
   default_subnet_prefixes = [var.sb_dsubnet_address_space_region1]
-  dns_servers = [var.dc1_private_ip_addr,"168.63.129.16"]
+  #dns_servers = [var.dc1_private_ip_addr,"168.63.12
+  dns_servers = ["168.63.129.16"]
   route_table_id = azurerm_route_table.SandBox-Region1.id
 }
 
@@ -437,6 +446,7 @@ module "peering_sb_spk_Region1_1" {
   netB_name            = module.sb_spk_region1.vnet_name
   netB_id              = module.sb_spk_region1.vnet_id
   gateway_transit = var.hybrid_deployment ? true : false
+  depends_on = [ module.onprem_VPN_Region1 ]
 }
 
 # Peering between hub1 and landingzone1
@@ -451,7 +461,8 @@ module "peering_sb_spk_Region1_2" {
   netB_name            = module.sb_spk_region1.vnet_name
   netB_id              = module.sb_spk_region1.vnet_id
   remote_gateways      = var.hybrid_deployment ? true : false
-  depends_on = [module.peering_sb_spk_Region1_1]
+  depends_on = [module.peering_sb_spk_Region1_1,module.onprem_VPN_Region1]
+  
 }
 
 #Add Storage Private Zone and Link to all vnets
@@ -558,8 +569,9 @@ resource "azurerm_route_table" "LandingZone-Region1" {
   route {
     name           = "Route-${var.lz_spk_rg_prefix}-${var.region1_loc}-HubNva"
     address_prefix = "10.0.0.0/8"
-    next_hop_in_ip_address = var.dns_nva1_private_ip_addr
-    next_hop_type  = "VirtualAppliance"
+    next_hop_type  = "VnetLocal"
+    #next_hop_in_ip_address = var.dns_nva1_private_ip_addr
+    #next_hop_type  = "VirtualAppliance"
   }
 
   tags = {
@@ -576,22 +588,24 @@ resource "azurerm_route_table" "SandBox-Region1" {
   route {
     name           = "Route-${var.sb_spk_rg_prefix}-${var.region1_loc}-HubNva"
     address_prefix = "10.0.0.0/8"
-    next_hop_in_ip_address = var.dns_nva1_private_ip_addr
-    next_hop_type  = "VirtualAppliance"
+    next_hop_type  = "VnetLocal"
+    #next_hop_in_ip_address = var.dns_nva1_private_ip_addr
+    #next_hop_type  = "VirtualAppliance"
   }
 
   tags = {
     environment = "Production"
   }
 }
+
 # Bastion Host
-module "bastion_region1" {
-  providers = { azurerm = azurerm
-    azurerm.poc = azurerm.poc }
-  source = "../../../../modules/azure_bastion"
-  resource_group_name  = azurerm_resource_group.hub_region1.name
-  location = var.region1_loc
-  azurebastion_name = var.azurebastion_name
-  azurebastion_vnet_name = module.hub_region1.vnet_name
-  azurebastion_addr_prefix = var.bastion_addr_prefix
-}
+#module "bastion_region1" {
+#  providers = { azurerm = azurerm
+#    azurerm.poc = azurerm.poc }
+#  source = "../../../../modules/azure_bastion"
+#  resource_group_name  = azurerm_resource_group.hub_region1.name
+#  location = var.region1_loc
+#  azurebastion_name = var.azurebastion_name
+#  azurebastion_vnet_name = module.hub_region1.vnet_name
+#  azurebastion_addr_prefix = var.bastion_addr_prefix
+#}

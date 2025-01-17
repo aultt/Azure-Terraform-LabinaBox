@@ -2,37 +2,32 @@ variable "region1_loc" {
   type = string
   default = "eastus2"
 }
-variable "key_vault_name" {
-  type=string
-  default="kv-TAMZ-eastus2"
-}
 
-variable "keyvault_resource_group" {
-    type = string
-    default = "net-id-spk-eastus2-rg"
-}
-variable "region1_name" {
-  default = "hub1"
-}
+#variable "region1_name" {
+#  default = "hub1"
+#}
+#
+#variable "region2_name" {
+#  default = "hub2"
+#}
 
-variable "region2_name" {
-  default = "hub2"
-}
 variable "corp_prefix" {
     type        = string 
     description = "Corp name Prefix"
-}
-variable "hybrid_deployment" {
-    type = bool
-    description = "Is this a Hybrid Deployment or Cloud Only"
-    default = false
+    default = "corp"
 }
 
-variable "deploy_domain" {
-    type = bool
-    description = "Deploy domain controller?"
-    default = true
-}
+#variable "hybrid_deployment" {
+#    type = bool
+#    description = "Is this a Hybrid Deployment or Cloud Only"
+#    default = false
+#}
+#
+#variable "deploy_domain" {
+#    type = bool
+#    description = "Deploy domain controller?"
+#    default = true
+#}
 
 variable "poc_subscription_id" {
     type        = string 
@@ -65,6 +60,7 @@ variable "jump_host_private_ip_addr" {
     description = "Azure Jump Host Address"
     default     = "10.1.251.5"
 }
+
 variable "jump_host_vm_size" {
     type        = string 
     description = "Azure Jump Host VM SKU"
@@ -85,65 +81,65 @@ variable "jump_host_subnet_name" {
     default = "jumphost-subnet"
 }
 # DC1 host module
-variable "dc1_vm_name" {
-    type        = string
-    default     = "aedc001"
-}
-variable "dc1_addr_prefix" {
-    type        = string 
-    description = "Dc1 Address Prefix"
-    default     = "10.3.3.0/24"  
-}
-variable "dc1_private_ip_addr" {
-    type        = string 
-    description = "DC2 Private IP Address"
-    default     = "10.3.3.5"
-}
-variable "dc1_vm_size" {
-    type        = string 
-    description = "DC1 VM size"
-    default     = "Standard_B2ms"
-}
-variable "dc1_data_disk_size" {
-    type        = string 
-    description = "Dc1 data disk Size"
-    default     = "20"
-}
-variable "dc1_storage_account_type" {
-    type        = string 
-    description = "DC1 storage account type"
-    default     = "Standard_LRS"
-}
-# Dns1 host module
-variable "dns1_vm_name" {
-    type        = string
-    default     = "aednsnva1"
-}
-variable "dns1_addr_prefix" {
-    type        = string 
-    description = "Dc1 Address Prefix"
-    default     = "10.1.1.0/24"  
-}
-variable "dns1_private_ip_addr" {
-    type        = string 
-    description = "DC2 Private IP Address"
-    default     = "10.1.1.5"
-}
-variable "dns1_vm_size" {
-    type        = string 
-    description = "DC1 VM size"
-    default     = "Standard_B2ms"
-}
-variable "dns1_data_disk_size" {
-    type        = string 
-    description = "Dc1 data disk Size"
-    default     = "20"
-}
-variable "dns1_storage_account_type" {
-    type        = string 
-    description = "DC1 storage account type"
-    default     = "Standard_LRS"
-}
+#variable "dc1_vm_name" {
+#    type        = string
+#    default     = "aedc001"
+#}
+#variable "dc1_addr_prefix" {
+#    type        = string 
+#    description = "Dc1 Address Prefix"
+#    default     = "10.3.3.0/24"  
+#}
+#variable "dc1_private_ip_addr" {
+#    type        = string 
+#    description = "DC2 Private IP Address"
+#    default     = "10.3.3.5"
+#}
+#variable "dc1_vm_size" {
+#    type        = string 
+#    description = "DC1 VM size"
+#    default     = "Standard_B2ms"
+#}
+#variable "dc1_data_disk_size" {
+#    type        = string 
+#    description = "Dc1 data disk Size"
+#    default     = "20"
+#}
+#variable "dc1_storage_account_type" {
+#    type        = string 
+#    description = "DC1 storage account type"
+#    default     = "Standard_LRS"
+#}
+## Dns1 host module
+#variable "dns1_vm_name" {
+#    type        = string
+#    default     = "aednsnva1"
+#}
+#variable "dns1_addr_prefix" {
+#    type        = string 
+#    description = "Dc1 Address Prefix"
+#    default     = "10.1.1.0/24"  
+#}
+#variable "dns1_private_ip_addr" {
+#    type        = string 
+#    description = "DC2 Private IP Address"
+#    default     = "10.1.1.5"
+#}
+#variable "dns1_vm_size" {
+#    type        = string 
+#    description = "DC1 VM size"
+#    default     = "Standard_B2ms"
+#}
+#variable "dns1_data_disk_size" {
+#    type        = string 
+#    description = "Dc1 data disk Size"
+#    default     = "20"
+#}
+#variable "dns1_storage_account_type" {
+#    type        = string 
+#    description = "DC1 storage account type"
+#    default     = "Standard_LRS"
+#}
 variable "local_admin_username" {
     type        = string 
     description = "Azure Admin Username"
@@ -192,12 +188,39 @@ variable "id_spk_region1_shared_subnet_name" {
 }
 
 #NVA VMs
-variable "nvaregion1_name" {
-    type        = string
-    default     = "aenva001"
+#variable "nvaregion1_name" {
+#    type        = string
+#    default     = "aenva001"
+#}
+#variable "nvaregion1_private_ip_addr" {
+#    type        = string 
+#    description = "Azure vm Host Address"
+#    default     = "10.1.1.5"
+#}
+
+variable "inbound_subnet_name" {
+    type = string
+    default = "snet-inbound"
 }
-variable "nvaregion1_private_ip_addr" {
-    type        = string 
-    description = "Azure vm Host Address"
-    default     = "10.1.1.5"
+variable "outbound_subnet_name" {
+    type = string
+    default = "snet-outbound"
+}
+variable "inbound_subnet_addr" {
+    type = string
+    default = "10.1.2.240/28"  
+}
+variable "outbound_subnet_addr" {
+    type = string
+    default = "10.1.3.240/28" 
+}
+
+variable "onprem_domain_name" {
+    type =  string
+    default = "onprem.net."
+}   
+
+variable "onprem_target_dns_server_ip" {
+    type = string
+    default = "192.168.0.1"
 }
